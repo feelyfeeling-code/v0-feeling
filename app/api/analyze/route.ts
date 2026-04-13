@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { scrapeJobOffer, type JobData } from '@/lib/scraper'
 import { analyzeJobMatch } from '@/lib/ai-analysis'
+import { checkDailyAnalysisLimit, DAILY_ANALYSIS_LIMIT } from '@/lib/rate-limit'
 
 interface RawOfferPayload {
   title: string
@@ -42,7 +43,21 @@ export async function POST(request: Request) {
         { status: 401 }
       )
     }
-    
+
+    // Check daily analysis limit
+    const { exceeded, count } = await checkDailyAnalysisLimit(supabase, userId)
+    if (exceeded) {
+      return NextResponse.json(
+        {
+          error: `Tu as atteint la limite de ${DAILY_ANALYSIS_LIMIT} analyses par jour. Reviens demain !`,
+          code: 'DAILY_LIMIT_EXCEEDED',
+          count,
+          limit: DAILY_ANALYSIS_LIMIT,
+        },
+        { status: 429 },
+      )
+    }
+
     // Get user profiles for analysis
     const [personalityResult, valuesResult, dreamJobResult, situationResult] = await Promise.all([
       supabase.from('personality_profiles').select('*').eq('user_id', userId).single(),

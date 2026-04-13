@@ -77,6 +77,12 @@ export function HomeDashboard({ userId, firstName, recentAnalyses }: HomeDashboa
           setMode('paste')
           return
         }
+        // Limite journalière atteinte
+        if (data.code === 'DAILY_LIMIT_EXCEEDED') {
+          toast.error(data.error, { duration: 6000 })
+          setIsAnalyzing(false)
+          return
+        }
         throw new Error(data.error || 'Erreur lors de l\'analyse')
       }
 
