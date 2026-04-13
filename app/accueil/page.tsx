@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { HomeDashboard } from '@/components/home/home-dashboard'
+import { checkDailyAnalysisLimit, DAILY_ANALYSIS_LIMIT } from '@/lib/rate-limit'
 
 export const metadata = {
   title: 'Accueil - Feeling',
@@ -26,21 +27,26 @@ export default async function AccueilPage() {
     redirect('/onboarding')
   }
   
-  // Get user's previous analyses
-  const { data: analyses } = await supabase
-    .from('job_analyses')
-    .select('id, job_title, company_name, overall_score, created_at')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(5)
-  
+  // Get user's previous analyses + daily count
+  const [analysesResult, { count: dailyCount }] = await Promise.all([
+    supabase
+      .from('job_analyses')
+      .select('id, job_title, company_name, overall_score, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    checkDailyAnalysisLimit(supabase, user.id),
+  ])
+
   const firstName = profile?.first_name || user.user_metadata?.first_name || 'toi'
-  
+
   return (
-    <HomeDashboard 
+    <HomeDashboard
       userId={user.id}
       firstName={firstName}
-      recentAnalyses={analyses || []}
+      recentAnalyses={analysesResult.data || []}
+      dailyAnalysisCount={dailyCount}
+      dailyAnalysisLimit={DAILY_ANALYSIS_LIMIT}
     />
   )
 }
