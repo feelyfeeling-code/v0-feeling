@@ -152,7 +152,7 @@ export function TechnicalProfileForm({
 
       // If coming from an analysis, trigger complete re-analysis
       if (fromAnalysisId) {
-        toast.loading('Analyse complète en cours...')
+        const toastId = toast.loading('Analyse complète en cours...')
 
         const analyzeResponse = await fetch('/api/analyze-complete', {
           method: 'POST',
@@ -162,10 +162,11 @@ export function TechnicalProfileForm({
 
         if (!analyzeResponse.ok) {
           const data = await analyzeResponse.json()
+          toast.dismiss(toastId)
           throw new Error(data.error || 'Erreur lors de l\'analyse')
         }
 
-        toast.success('Analyse complète prête !')
+        toast.success('Analyse complète prête !', { id: toastId })
         router.push(`/resultats-complets/${fromAnalysisId}`)
       } else {
         toast.success('Profil technique sauvegardé !')
