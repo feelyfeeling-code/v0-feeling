@@ -57,11 +57,35 @@ export function AcademicStep({ data, onUpdate, onNext, onPrev }: AcademicStepPro
     }
   }
 
-  // graduation_date est stocké en YYYY-MM-DD ; l'input month renvoie YYYY-MM
-  const graduationMonth = data.graduation_date ? data.graduation_date.slice(0, 7) : ''
-  const handleGraduationChange = (value: string) => {
-    onUpdate({ graduation_date: value ? `${value}-01` : '' })
+  // graduation_date est stocké en YYYY-MM-DD
+  const graduationYear = data.graduation_date ? data.graduation_date.slice(0, 4) : ''
+  const graduationMonthNum = data.graduation_date ? data.graduation_date.slice(5, 7) : ''
+
+  const handleGraduationMonthChange = (month: string) => {
+    const year = graduationYear || new Date().getFullYear().toString()
+    onUpdate({ graduation_date: `${year}-${month}-01` })
   }
+  const handleGraduationYearChange = (year: string) => {
+    const month = graduationMonthNum || '01'
+    onUpdate({ graduation_date: `${year}-${month}-01` })
+  }
+
+  const months = [
+    { value: '01', label: 'Janvier' },
+    { value: '02', label: 'Février' },
+    { value: '03', label: 'Mars' },
+    { value: '04', label: 'Avril' },
+    { value: '05', label: 'Mai' },
+    { value: '06', label: 'Juin' },
+    { value: '07', label: 'Juillet' },
+    { value: '08', label: 'Août' },
+    { value: '09', label: 'Septembre' },
+    { value: '10', label: 'Octobre' },
+    { value: '11', label: 'Novembre' },
+    { value: '12', label: 'Décembre' },
+  ]
+  const currentYear = new Date().getFullYear()
+  const years = Array.from({ length: 51 }, (_, i) => String(currentYear - i))
 
   const canContinue =
     !!data.education_level &&
@@ -112,14 +136,33 @@ export function AcademicStep({ data, onUpdate, onNext, onPrev }: AcademicStepPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="graduation-date">Date d&apos;obtention :</Label>
-            <Input
-              id="graduation-date"
-              type="month"
-              value={graduationMonth}
-              onChange={(e) => handleGraduationChange(e.target.value)}
-              className="h-12 rounded-full"
-            />
+            <Label>Date d&apos;obtention :</Label>
+            <div className="flex gap-2">
+              <Select value={graduationMonthNum} onValueChange={handleGraduationMonthChange}>
+                <SelectTrigger className="flex-1 !h-12 rounded-full">
+                  <SelectValue placeholder="Mois" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={graduationYear} onValueChange={handleGraduationYearChange}>
+                <SelectTrigger className="flex-1 !h-12 rounded-full">
+                  <SelectValue placeholder="Année" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((y) => (
+                    <SelectItem key={y} value={y}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
