@@ -76,12 +76,31 @@ export default function RootLayout({
             })(window, document, "clarity", "script", "wazkrrk00v");`}
           </Script>
         )}
+        <Script
+          id="gtm-script"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-MK523KMS');`,
+          }}
+        />
       </head>
       <body className={`${dmSans.variable} ${fraunces.variable} ${geistMono.variable} font-sans antialiased`}>
         {children}
         <Toaster position="top-center" />
         {process.env.NODE_ENV === 'production' && <Analytics />}
         <GoogleAnalytics gaId="G-PT379Z73RB" />
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-MK523KMS"
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
       </body>
     </html>
   )
