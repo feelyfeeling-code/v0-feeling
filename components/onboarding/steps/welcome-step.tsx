@@ -59,11 +59,7 @@ export function WelcomeStep({ firstName, onNext }: WelcomeStepProps) {
         </div>
       </div>
       
-      {/* Duration estimate */}
-      <div className="flex items-center justify-center gap-2 text-muted-foreground mb-8">
-        <Clock className="w-4 h-4" />
-      </div>
-      
+
       <Button
         onClick={onNext}
         size="lg"
