@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Fraunces, Geist_Mono } from 'next/font/google'
 import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -80,6 +81,7 @@ export default function RootLayout({
         {children}
         <Toaster position="top-center" />
         {process.env.NODE_ENV === 'production' && <Analytics />}
+        <GoogleAnalytics gaId="G-PT379Z73RB" />
       </body>
     </html>
   )
