@@ -83,8 +83,8 @@ export function SignupForm() {
       return
     }
 
-    toast.success('Compte créé ! Vérifie tes emails pour confirmer ton inscription.')
-    router.push('/inscription/succes')
+    toast.success('Compte créé ! Bienvenue sur Feeling.')
+    router.push('/onboarding')
   }
 
   return (
