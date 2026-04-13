@@ -181,7 +181,7 @@ export function AcademicStep({ data, onUpdate, onNext, onPrev }: AcademicStepPro
           <Label htmlFor="school-name">Établissement :</Label>
           <Input
             id="school-name"
-            placeholder="Master Feeling Good"
+            placeholder="Université de la Vie"
             value={data.school_name}
             onChange={(e) => onUpdate({ school_name: e.target.value })}
             className="h-12 rounded-full"
