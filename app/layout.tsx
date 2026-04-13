@@ -99,6 +99,13 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
+        <Script
+          id="cookiebot"
+          src="https://consent.cookiebot.com/uc.js"
+          data-cbid="e863569c-dabb-4d7b-85c1-c6eb0c10da0f"
+          data-blockingmode="auto"
+          strategy="beforeInteractive"
+        />
         {process.env.NODE_ENV === "production" && (
           <Script id="ms-clarity" strategy="afterInteractive">
             {`(function(c,l,a,r,i,t,y){
@@ -119,13 +126,7 @@ export default function RootLayout({
             })(window,document,'script','dataLayer','GTM-MK523KMS');`,
           }}
         />
-        <Script
-          id="cookiebot"
-          src="https://consent.cookiebot.com/uc.js"
-          data-cbid="e863569c-dabb-4d7b-85c1-c6eb0c10da0f"
-          data-blockingmode="auto"
-          strategy="beforeInteractive"
-        />
+
       </head>
       <body
         className={`${dmSans.variable} ${fraunces.variable} ${geistMono.variable} font-sans antialiased`}
