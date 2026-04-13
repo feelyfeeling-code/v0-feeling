@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { FeelingLogo } from '@/components/feeling-logo'
+import { FeelingLogo, FeelingLogoInline } from '@/components/feeling-logo'
 import { FeelyMascot } from '@/components/feely-mascot'
 import { Footer } from '@/components/footer'
 import { WelcomePopup } from './welcome-popup'
@@ -367,7 +367,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-4">
-                    <span style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic' }}>feeling</span>, qu&apos;est-ce que c&apos;est ?
+                    <FeelingLogoInline />, qu&apos;est-ce que c&apos;est ?
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
                     Feeling, c&apos;est Feely ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 

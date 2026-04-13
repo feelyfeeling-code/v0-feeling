@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { FeelingLogo } from './feeling-logo'
+import { FeelingLogo, FeelingLogoInline } from './feeling-logo'
 import { FeelyMascot } from './feely-mascot'
 import { Footer } from './footer'
 import { ArrowRight, CheckCircle2, Sparkles, Heart, Target } from 'lucide-react'
@@ -43,9 +43,7 @@ export function LandingPage() {
             <div className="flex-1 text-center lg:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-balance">
                 Le bon job, c&apos;est celui avec lequel tu as un bon{' '}
-                <span className="text-primary" style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic' }}>
-                  feeling
-                </span>
+                <FeelingLogoInline color="var(--color-primary)" />
               </h1>
               <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl">
                 Feeling t&apos;aide à trouver un job qui te ressemble vraiment. 
@@ -102,7 +100,7 @@ export function LandingPage() {
               </div>
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                  <span style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic' }}>feeling</span>, qu&apos;est-ce que c&apos;est ?
+                  <FeelingLogoInline />, qu&apos;est-ce que c&apos;est ?
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
                   Feeling, c&apos;est Feely ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 
