@@ -162,23 +162,26 @@ export function DreamJobStep({
           <Label htmlFor="job-title-input" className="text-base font-semibold">
             Quel poste tu vises&nbsp;?
           </Label>
-          <div className="relative">
+          <div className="flex gap-2">
             <Input
               id="job-title-input"
-              placeholder="Ex : Product Manager, UX Designer..."
+              placeholder="Ex : Product Manager, UX Designer... (Entrée pour valider)"
               value={jobTitleInput}
               onChange={(e) => setJobTitleInput(e.target.value)}
               onKeyDown={handleJobTitleKeyDown}
-              className="h-12 rounded-full pr-12"
+              onBlur={addJobTitle}
+              className="h-12 rounded-full flex-1"
             />
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="icon"
               onClick={addJobTitle}
               aria-label="Ajouter un intitulé de poste"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+              className="h-12 w-12 rounded-full flex-shrink-0"
             >
               <Plus className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
           {jobTitlesList.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-1">
@@ -202,25 +205,26 @@ export function DreamJobStep({
           <Label htmlFor="location-input" className="text-base font-semibold">
             Où tu veux travailler&nbsp;?
           </Label>
-          <div className="flex gap-3">
-            <div className="relative flex-1">
-              <Input
-                id="location-input"
-                placeholder="Ex : Paris, Lyon, remote..."
-                value={locationInput}
-                onChange={(e) => setLocationInput(e.target.value)}
-                onKeyDown={handleLocationKeyDown}
-                className="h-12 rounded-full pr-12"
-              />
-              <button
-                type="button"
-                onClick={addLocation}
-                aria-label="Ajouter une localisation"
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
-            </div>
+          <div className="flex gap-2">
+            <Input
+              id="location-input"
+              placeholder="Ex : Paris, Lyon, remote... (Entrée pour valider)"
+              value={locationInput}
+              onChange={(e) => setLocationInput(e.target.value)}
+              onKeyDown={handleLocationKeyDown}
+              onBlur={addLocation}
+              className="h-12 rounded-full flex-1 min-w-0"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={addLocation}
+              aria-label="Ajouter une localisation"
+              className="h-12 w-12 rounded-full flex-shrink-0"
+            >
+              <Plus className="w-5 h-5" />
+            </Button>
             <Select
               value={String(locationRadius)}
               onValueChange={(value) =>
@@ -261,23 +265,26 @@ export function DreamJobStep({
           <Label htmlFor="industry-input" className="text-base font-semibold">
             Dans quel secteur tu te vois&nbsp;?
           </Label>
-          <div className="relative">
+          <div className="flex gap-2">
             <Input
               id="industry-input"
-              placeholder="Ex : Tech, Santé, Finance..."
+              placeholder="Ex : Tech, Santé, Finance... (Entrée pour valider)"
               value={industryInput}
               onChange={(e) => setIndustryInput(e.target.value)}
               onKeyDown={handleIndustryKeyDown}
-              className="h-12 rounded-full pr-12"
+              onBlur={addIndustry}
+              className="h-12 rounded-full flex-1"
             />
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="icon"
               onClick={addIndustry}
               aria-label="Ajouter un secteur"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+              className="h-12 w-12 rounded-full flex-shrink-0"
             >
               <Plus className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
           {industriesList.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-1">

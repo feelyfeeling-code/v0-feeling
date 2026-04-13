@@ -1,95 +1,105 @@
-import type { Metadata, Viewport } from 'next'
-import { DM_Sans, Fraunces, Geist_Mono } from 'next/font/google'
-import Script from 'next/script'
-import { Analytics } from '@vercel/analytics/next'
-import { GoogleAnalytics } from '@next/third-parties/google'
-import { Toaster } from '@/components/ui/sonner'
-import './globals.css'
+import type { Metadata, Viewport } from "next";
+import { DM_Sans, Fraunces, Geist_Mono } from "next/font/google";
+import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { Toaster } from "@/components/ui/sonner";
+import "./globals.css";
 
-const dmSans = DM_Sans({ 
-  subsets: ['latin'],
-  variable: '--font-dm-sans',
-})
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+});
 
-const fraunces = Fraunces({ 
-  subsets: ['latin'],
-  variable: '--font-fraunces',
-  style: ['normal', 'italic'],
-})
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  style: ["normal", "italic"],
+});
 
-const geistMono = Geist_Mono({ 
-  subsets: ['latin'],
-  variable: '--font-geist-mono',
-})
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+});
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://feeling-app.vercel.app'
-const ogTitle = 'Feeling — Trouve un job qui te ressemble vraiment'
-const ogDescription = 'Analyse chaque offre d\'emploi selon ta personnalité et tes valeurs. Trouve le job qui te correspond, pas juste celui qui coche les cases.'
-const ogImage = `${siteUrl}/feeling-logo.svg`
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://v0-feeling.vercel.app";
+const ogTitle = "Feeling - Trouve un job qui te ressemble vraiment";
+const ogDescription =
+  "Analyse chaque offre d'emploi selon ta personnalité et tes valeurs. Trouve le job qui te correspond, pas juste celui qui coche les cases.";
+const ogImage = `${siteUrl}/feeling-logo.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: ogTitle,
   description: ogDescription,
-  generator: 'v0.app',
-  keywords: ['emploi', 'job', 'matching', 'personnalité', 'valeurs', 'carrière', 'recrutement'],
-  authors: [{ name: 'Feeling' }],
+  generator: "v0.app",
+  keywords: [
+    "emploi",
+    "job",
+    "matching",
+    "personnalité",
+    "valeurs",
+    "carrière",
+    "recrutement",
+  ],
+  authors: [{ name: "Feeling" }],
   icons: {
     icon: [
       {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
+        url: "/icon-light-32x32.png",
+        media: "(prefers-color-scheme: light)",
       },
       {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
+        url: "/icon-dark-32x32.png",
+        media: "(prefers-color-scheme: dark)",
       },
       {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
+        url: "/icon.svg",
+        type: "image/svg+xml",
       },
     ],
-    apple: '/apple-icon.png',
+    apple: "/apple-icon.png",
   },
   openGraph: {
     title: ogTitle,
     description: ogDescription,
     url: siteUrl,
-    siteName: 'Feeling',
-    type: 'website',
-    locale: 'fr_FR',
+    siteName: "Feeling",
+    type: "website",
+    locale: "fr_FR",
     images: [
       {
         url: ogImage,
         width: 1200,
         height: 630,
-        alt: 'Feeling — Le job qui te ressemble',
+        alt: "Feeling — Le job qui te ressemble",
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
+    card: "summary_large_image",
     title: ogTitle,
     description: ogDescription,
     images: [ogImage],
   },
-}
+};
 
 export const viewport: Viewport = {
-  themeColor: '#D4C4FB',
-  width: 'device-width',
+  themeColor: "#D4C4FB",
+  width: "device-width",
   initialScale: 1,
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="fr">
       <head>
-        {process.env.NODE_ENV === 'production' && (
+        {process.env.NODE_ENV === "production" && (
           <Script id="ms-clarity" strategy="afterInteractive">
             {`(function(c,l,a,r,i,t,y){
                 c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -117,20 +127,22 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
       </head>
-      <body className={`${dmSans.variable} ${fraunces.variable} ${geistMono.variable} font-sans antialiased`}>
+      <body
+        className={`${dmSans.variable} ${fraunces.variable} ${geistMono.variable} font-sans antialiased`}
+      >
         {children}
         <Toaster position="top-center" />
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        {process.env.NODE_ENV === "production" && <Analytics />}
         <GoogleAnalytics gaId="G-PT379Z73RB" />
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-MK523KMS"
             height="0"
             width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
+            style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
       </body>
     </html>
-  )
+  );
 }
