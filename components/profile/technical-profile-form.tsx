@@ -9,8 +9,40 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Plus, Trash2, X, Sparkles, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
+
+const MONTHS = [
+  { value: '01', label: 'Janvier' },
+  { value: '02', label: 'Février' },
+  { value: '03', label: 'Mars' },
+  { value: '04', label: 'Avril' },
+  { value: '05', label: 'Mai' },
+  { value: '06', label: 'Juin' },
+  { value: '07', label: 'Juillet' },
+  { value: '08', label: 'Août' },
+  { value: '09', label: 'Septembre' },
+  { value: '10', label: 'Octobre' },
+  { value: '11', label: 'Novembre' },
+  { value: '12', label: 'Décembre' },
+]
+const CURRENT_YEAR = new Date().getFullYear()
+const YEARS = Array.from({ length: 51 }, (_, i) => String(CURRENT_YEAR - i))
+
+/** Extrait "MM" depuis "YYYY-MM" ou "" */
+const getMonth = (date: string) => date?.slice(5, 7) ?? ''
+/** Extrait "YYYY" depuis "YYYY-MM" ou "" */
+const getYear = (date: string) => date?.slice(0, 4) ?? ''
+/** Reconstruit "YYYY-MM" depuis year + month, ou "" si incomplet */
+const buildDate = (year: string, month: string) =>
+  year && month ? `${year}-${month}` : ''
 
 interface WorkExperience {
   job_title: string
@@ -276,21 +308,75 @@ export function TechnicalProfileForm({
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-muted-foreground">Date de début *</label>
-                      <Input
-                        type="month"
-                        value={exp.start_date}
-                        onChange={(e) => updateExperience(index, { start_date: e.target.value })}
-                      />
+                      <div className="flex gap-1.5">
+                        <Select
+                          value={getMonth(exp.start_date)}
+                          onValueChange={(m) =>
+                            updateExperience(index, { start_date: buildDate(getYear(exp.start_date), m) })
+                          }
+                        >
+                          <SelectTrigger className="flex-1 h-10">
+                            <SelectValue placeholder="Mois" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MONTHS.map((m) => (
+                              <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select
+                          value={getYear(exp.start_date)}
+                          onValueChange={(y) =>
+                            updateExperience(index, { start_date: buildDate(y, getMonth(exp.start_date)) })
+                          }
+                        >
+                          <SelectTrigger className="flex-1 h-10">
+                            <SelectValue placeholder="Année" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {YEARS.map((y) => (
+                              <SelectItem key={y} value={y}>{y}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-muted-foreground">Date de fin</label>
-                      <Input
-                        type="month"
-                        value={exp.end_date}
-                        disabled={exp.is_current}
-                        onChange={(e) => updateExperience(index, { end_date: e.target.value })}
-                        className={cn(exp.is_current && 'opacity-50')}
-                      />
+                      <div className={cn('flex gap-1.5', exp.is_current && 'opacity-50 pointer-events-none')}>
+                        <Select
+                          value={getMonth(exp.end_date)}
+                          disabled={exp.is_current}
+                          onValueChange={(m) =>
+                            updateExperience(index, { end_date: buildDate(getYear(exp.end_date), m) })
+                          }
+                        >
+                          <SelectTrigger className="flex-1 h-10">
+                            <SelectValue placeholder="Mois" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MONTHS.map((m) => (
+                              <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select
+                          value={getYear(exp.end_date)}
+                          disabled={exp.is_current}
+                          onValueChange={(y) =>
+                            updateExperience(index, { end_date: buildDate(y, getMonth(exp.end_date)) })
+                          }
+                        >
+                          <SelectTrigger className="flex-1 h-10">
+                            <SelectValue placeholder="Année" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {YEARS.map((y) => (
+                              <SelectItem key={y} value={y}>{y}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
 
