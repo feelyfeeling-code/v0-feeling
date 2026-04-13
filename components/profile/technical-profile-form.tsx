@@ -36,13 +36,19 @@ const MONTHS = [
 const CURRENT_YEAR = new Date().getFullYear()
 const YEARS = Array.from({ length: 51 }, (_, i) => String(CURRENT_YEAR - i))
 
-/** Extrait "MM" depuis "YYYY-MM" ou "" */
-const getMonth = (date: string) => date?.slice(5, 7) ?? ''
-/** Extrait "YYYY" depuis "YYYY-MM" ou "" */
-const getYear = (date: string) => date?.slice(0, 4) ?? ''
-/** Reconstruit "YYYY-MM" depuis year + month, ou "" si incomplet */
+/** Extrait "MM" depuis "YYYY-MM", "-MM" (partiel) ou "" */
+const getMonth = (date: string) => date?.split('-')[1] ?? ''
+/** Extrait "YYYY" depuis "YYYY-MM", "YYYY-" (partiel) ou "" */
+const getYear = (date: string) => date?.split('-')[0] ?? ''
+/**
+ * Reconstruit la date depuis year + month.
+ * Stocke une valeur partielle ("YYYY-" ou "-MM") si l'un des deux manque,
+ * afin que le Select correspondant garde sa sélection en attendant l'autre.
+ */
 const buildDate = (year: string, month: string) =>
-  year && month ? `${year}-${month}` : ''
+  year || month ? `${year}-${month}` : ''
+/** Vérifie qu'une date est complète et valide (YYYY-MM) */
+const isValidDate = (date: string) => /^\d{4}-\d{2}$/.test(date)
 
 interface WorkExperience {
   job_title: string
@@ -121,7 +127,7 @@ export function TechnicalProfileForm({
   const handleSave = async () => {
     // Validate at least one experience has required fields
     const filledExperiences = experiences.filter(
-      (e) => e.job_title.trim() && e.company_name.trim() && e.start_date.trim()
+      (e) => e.job_title.trim() && e.company_name.trim() && isValidDate(e.start_date)
     )
 
     if (filledExperiences.length === 0 && skills.length === 0) {
