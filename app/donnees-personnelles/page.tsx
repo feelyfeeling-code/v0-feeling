@@ -10,7 +10,7 @@ export default function DonneesPersonnellesPage() {
     <>
       <main className="container mx-auto px-4 py-12 max-w-3xl">
         <h1 className="font-serif font-bold text-4xl mb-2">Collecte et traitement des données personnelles</h1>
-        <p className="text-sm text-muted-foreground mb-8">Dernière mise à jour : avril 2025</p>
+        <p className="text-sm text-muted-foreground mb-8">Dernière mise à jour : avril 2026</p>
 
         <article className="max-w-none space-y-4 [&_h2]:font-bold [&_h2]:text-2xl [&_h2]:mt-12 [&_h2]:pt-10 [&_h2]:border-t-2 [&_h2]:border-foreground/20 [&>p:first-of-type]:mt-0 [&_p]:leading-relaxed [&_p]:my-4 [&_a]:underline [&_a]:text-primary">
           <p>
