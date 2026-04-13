@@ -323,9 +323,6 @@ export function PersonalityStep({
                       <div className="text-sm font-semibold">
                         {getTraitLabel(value)}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Pondération&nbsp;: {TRAIT_WEIGHTS[index]}
-                      </div>
                     </div>
                     <div className="flex flex-col gap-1">
                       <button

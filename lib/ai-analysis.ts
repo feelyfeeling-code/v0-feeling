@@ -158,7 +158,7 @@ export async function analyzeJobMatch(profiles: UserProfiles): Promise<AnalysisR
   const { jobData, personality, values, dreamJob, currentSituation, technicalProfile } = profiles
   
   const rankedTraits = personality.traits
-    .map((t, i) => `${i + 1}. ${TRAIT_LABELS[t] ?? t} (pondération ${TRAIT_WEIGHTS[i] ?? ''})`)
+    .map((t, i) => `${i + 1}. ${TRAIT_LABELS[t] ?? t}`)
     .join('\n')
 
   const INTEGRATED_TEST_TEXTS: Record<string, string> = {

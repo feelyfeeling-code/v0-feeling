@@ -297,7 +297,7 @@ export function CompleteResultsView({ analysis }: CompleteResultsViewProps) {
 
           <p className="text-sm text-muted-foreground">
             Analyse finale combinant ta personnalité, tes valeurs et tes compétences
-            techniques (pondération 50% soft / 50% hard).
+            techniques.
           </p>
 
           {/* US 15.1 : score global en grand + barre + verdict */}
