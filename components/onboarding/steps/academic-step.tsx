@@ -26,6 +26,7 @@ const educationLevels = [
   { value: 'bac', label: 'BAC' },
   { value: 'bac+2', label: 'BAC +2' },
   { value: 'bac+3', label: 'BAC +3' },
+  { value: 'bac+4', label: 'BAC +4' },
   { value: 'bac+5', label: 'BAC +5' },
   { value: 'bac+8', label: 'BAC +8' },
 ]
@@ -85,7 +86,8 @@ export function AcademicStep({ data, onUpdate, onNext, onPrev }: AcademicStepPro
     { value: '12', label: 'Décembre' },
   ]
   const currentYear = new Date().getFullYear()
-  const years = Array.from({ length: 51 }, (_, i) => String(currentYear - i))
+  const maxYear = 2030
+  const years = Array.from({ length: maxYear - (currentYear - 50) + 1 }, (_, i) => String(maxYear - i))
 
   const canContinue =
     !!data.education_level &&
