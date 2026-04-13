@@ -14,6 +14,29 @@ import { Textarea } from '@/components/ui/textarea'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
+function DailyLimitBadge({ count, limit }: { count: number; limit: number }) {
+  const remaining = limit - count
+  const exceeded = remaining <= 0
+
+  return (
+    <div
+      className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full mb-2 ${
+        exceeded
+          ? 'bg-destructive/10 text-destructive'
+          : remaining === 1
+          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400'
+          : 'bg-muted text-muted-foreground'
+      }`}
+    >
+      <span>
+        {exceeded
+          ? 'Limite atteinte — reviens demain !'
+          : `${count}/${limit} analyses aujourd'hui`}
+      </span>
+    </div>
+  )
+}
+
 interface RecentAnalysis {
   id: string
   job_title: string
@@ -26,9 +49,11 @@ interface HomeDashboardProps {
   userId: string
   firstName: string
   recentAnalyses: RecentAnalysis[]
+  dailyAnalysisCount: number
+  dailyAnalysisLimit: number
 }
 
-export function HomeDashboard({ userId, firstName, recentAnalyses }: HomeDashboardProps) {
+export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysisCount, dailyAnalysisLimit }: HomeDashboardProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [jobUrl, setJobUrl] = useState('')
@@ -213,6 +238,9 @@ export function HomeDashboard({ userId, firstName, recentAnalyses }: HomeDashboa
                   </button>
                 </div>
 
+                {/* Compteur d'analyses journalières */}
+                <DailyLimitBadge count={dailyAnalysisCount} limit={dailyAnalysisLimit} />
+
                 {mode === 'url' ? (
                   <form onSubmit={handleAnalyzeUrl} className="space-y-4">
                     <div className="relative">
@@ -223,13 +251,13 @@ export function HomeDashboard({ userId, firstName, recentAnalyses }: HomeDashboa
                         value={jobUrl}
                         onChange={(e) => setJobUrl(e.target.value)}
                         className="h-14 pl-12 text-base"
-                        disabled={isAnalyzing}
+                        disabled={isAnalyzing || dailyAnalysisCount >= dailyAnalysisLimit}
                       />
                     </div>
 
                     <Button
                       type="submit"
-                      disabled={isAnalyzing}
+                      disabled={isAnalyzing || dailyAnalysisCount >= dailyAnalysisLimit}
                       className="h-14 px-8 bg-foreground text-background hover:bg-foreground/90 text-base font-medium"
                     >
                       {isAnalyzing ? (
@@ -260,14 +288,14 @@ export function HomeDashboard({ userId, firstName, recentAnalyses }: HomeDashboa
                         placeholder="Intitulé du poste *"
                         value={pastedTitle}
                         onChange={(e) => setPastedTitle(e.target.value)}
-                        disabled={isAnalyzing}
+                        disabled={isAnalyzing || dailyAnalysisCount >= dailyAnalysisLimit}
                         className="h-12"
                       />
                       <Input
                         placeholder="Entreprise *"
                         value={pastedCompany}
                         onChange={(e) => setPastedCompany(e.target.value)}
-                        disabled={isAnalyzing}
+                        disabled={isAnalyzing || dailyAnalysisCount >= dailyAnalysisLimit}
                         className="h-12"
                       />
                     </div>
@@ -276,21 +304,21 @@ export function HomeDashboard({ userId, firstName, recentAnalyses }: HomeDashboa
                         placeholder="Lieu (optionnel)"
                         value={pastedLocation}
                         onChange={(e) => setPastedLocation(e.target.value)}
-                        disabled={isAnalyzing}
+                        disabled={isAnalyzing || dailyAnalysisCount >= dailyAnalysisLimit}
                         className="h-12"
                       />
                       <Input
                         placeholder="Type de contrat (CDI, CDD...)"
                         value={pastedType}
                         onChange={(e) => setPastedType(e.target.value)}
-                        disabled={isAnalyzing}
+                        disabled={isAnalyzing || dailyAnalysisCount >= dailyAnalysisLimit}
                         className="h-12"
                       />
                       <Input
                         placeholder="Télétravail (full remote, hybride...)"
                         value={pastedRemote}
                         onChange={(e) => setPastedRemote(e.target.value)}
-                        disabled={isAnalyzing}
+                        disabled={isAnalyzing || dailyAnalysisCount >= dailyAnalysisLimit}
                         className="h-12"
                       />
                     </div>
@@ -298,12 +326,12 @@ export function HomeDashboard({ userId, firstName, recentAnalyses }: HomeDashboa
                       placeholder="Colle ici le texte complet de l'offre d'emploi (missions, profil recherché, compétences, avantages...) *"
                       value={pastedDescription}
                       onChange={(e) => setPastedDescription(e.target.value)}
-                      disabled={isAnalyzing}
+                      disabled={isAnalyzing || dailyAnalysisCount >= dailyAnalysisLimit}
                       className="min-h-[240px] text-sm"
                     />
                     <Button
                       type="submit"
-                      disabled={isAnalyzing}
+                      disabled={isAnalyzing || dailyAnalysisCount >= dailyAnalysisLimit}
                       className="h-14 px-8 bg-foreground text-background hover:bg-foreground/90 text-base font-medium"
                     >
                       {isAnalyzing ? (
