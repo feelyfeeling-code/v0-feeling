@@ -23,7 +23,7 @@ export function Footer() {
               <p className="text-sm text-background/70 mb-3">Suivez-nous sur les réseaux sociaux</p>
               <div className="flex items-center gap-4">
                 <Link 
-                  href="https://instagram.com/feeling" 
+                  href="https://www.instagram.com/feely.feeling/"
                   target="_blank"
                   className="hover:text-primary transition-colors"
                   aria-label="Instagram"
@@ -31,7 +31,7 @@ export function Footer() {
                   <Instagram className="w-6 h-6" />
                 </Link>
                 <Link 
-                  href="https://linkedin.com/company/feeling" 
+                  href="https://www.linkedin.com/company/feely-feeling"
                   target="_blank"
                   className="hover:text-primary transition-colors"
                   aria-label="LinkedIn"
@@ -39,7 +39,7 @@ export function Footer() {
                   <Linkedin className="w-6 h-6" />
                 </Link>
                 <Link 
-                  href="https://tiktok.com/@feeling" 
+                  href="https://www.tiktok.com/@feely.feeling"
                   target="_blank"
                   className="hover:text-primary transition-colors"
                   aria-label="TikTok"
