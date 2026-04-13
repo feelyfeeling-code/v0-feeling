@@ -22,9 +22,15 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
 })
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://feeling-app.vercel.app'
+const ogTitle = 'Feeling — Trouve un job qui te ressemble vraiment'
+const ogDescription = 'Analyse chaque offre d\'emploi selon ta personnalité et tes valeurs. Trouve le job qui te correspond, pas juste celui qui coche les cases.'
+const ogImage = `${siteUrl}/feeling-logo.svg`
+
 export const metadata: Metadata = {
-  title: 'Feeling - Le bon job, c\'est celui avec lequel tu as un bon feeling',
-  description: 'Feeling est ton allié dans ta recherche d\'emploi. Il t\'aide à trouver un job qui te ressemble vraiment. Pas juste un job qui coche les cases, un job qui colle avec ta personnalité et tes valeurs.',
+  metadataBase: new URL(siteUrl),
+  title: ogTitle,
+  description: ogDescription,
   generator: 'v0.app',
   keywords: ['emploi', 'job', 'matching', 'personnalité', 'valeurs', 'carrière', 'recrutement'],
   authors: [{ name: 'Feeling' }],
@@ -46,10 +52,26 @@ export const metadata: Metadata = {
     apple: '/apple-icon.png',
   },
   openGraph: {
-    title: 'Feeling - Trouve un job qui te ressemble',
-    description: 'Analyse les offres d\'emploi selon ta personnalité et tes valeurs',
+    title: ogTitle,
+    description: ogDescription,
+    url: siteUrl,
+    siteName: 'Feeling',
     type: 'website',
     locale: 'fr_FR',
+    images: [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Feeling — Le job qui te ressemble',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: ogTitle,
+    description: ogDescription,
+    images: [ogImage],
   },
 }
 
