@@ -62,7 +62,6 @@ export function WelcomeStep({ firstName, onNext }: WelcomeStepProps) {
       {/* Duration estimate */}
       <div className="flex items-center justify-center gap-2 text-muted-foreground mb-8">
         <Clock className="w-4 h-4" />
-        <span className="text-sm">Environ 10 minutes</span>
       </div>
       
       <Button
