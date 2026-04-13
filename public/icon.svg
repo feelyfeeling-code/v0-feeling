@@ -1,26 +1,21 @@
-<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    @media (prefers-color-scheme: light) {
-      .background { fill: black; }
-      .foreground { fill: white; }
-    }
-    @media (prefers-color-scheme: dark) {
-      .background { fill: white; }
-      .foreground { fill: black; }
-    }
-  </style>
-  <g clip-path="url(#clip0_7960_43945)">
-    <rect class="background" width="180" height="180" rx="37" />
-    <g style="transform: scale(95%); transform-origin: center">
-      <path class="foreground"
-        d="M101.141 53H136.632C151.023 53 162.689 64.6662 162.689 79.0573V112.904H148.112V79.0573C148.112 78.7105 148.098 78.3662 148.072 78.0251L112.581 112.898C112.701 112.902 112.821 112.904 112.941 112.904H148.112V126.672H112.941C98.5504 126.672 86.5638 114.891 86.5638 100.5V66.7434H101.141V100.5C101.141 101.15 101.191 101.792 101.289 102.422L137.56 66.7816C137.255 66.7563 136.945 66.7434 136.632 66.7434H101.141V53Z" />
-      <path class="foreground"
-        d="M65.2926 124.136L14 66.7372H34.6355L64.7495 100.436V66.7372H80.1365V118.47C80.1365 126.278 70.4953 129.958 65.2926 124.136Z" />
-    </g>
-  </g>
-  <defs>
-    <clipPath id="clip0_7960_43945">
-      <rect width="180" height="180" fill="white" />
-    </clipPath>
-  </defs>
+<svg width="420" height="319" viewBox="0 0 420 319" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M51.5745 37.6331L97.465 37.4013L114.204 37.7071L144.492 38.2605L166.013 38.6538L260.632 28.7089L335.431 12.2206C364.126 5.89514 391.443 27.3787 392.061 56.7562L386.244 113.056L385.07 136.306C384.435 148.89 385.237 161.506 387.462 173.909L396.13 222.249C398.584 235.932 395.333 250.023 387.134 261.249C377.506 274.429 362.141 282.192 345.818 282.121L243.551 281.677C228.535 281.611 213.542 282.893 198.755 285.506L84.8852 305.628C66.0902 307.604 49.2525 293.969 47.277 275.174L37.0848 178.201C35.4699 162.837 30.0256 148.123 21.2505 135.408L17.6197 130.147C11.2271 120.883 7.26085 110.164 6.0844 98.9712L5.09115 89.5211C3.6338 75.6553 8.4106 61.8585 18.1296 51.8623C26.9172 42.8241 38.9686 37.6968 51.5745 37.6331Z" fill="#CCB8FF"/>
+<ellipse cx="154.549" cy="138.805" rx="25.9192" ry="33.119" transform="rotate(-96 154.549 138.805)" fill="white"/>
+<mask id="mask0_760_242" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="121" y="112" width="67" height="53">
+<ellipse cx="154.548" cy="138.803" rx="25.9192" ry="33.119" transform="rotate(-96 154.548 138.803)" fill="white"/>
+</mask>
+<g mask="url(#mask0_760_242)">
+<ellipse cx="161.586" cy="153.782" rx="21.2449" ry="21.2228" transform="rotate(-96 161.586 153.782)" fill="#010101"/>
+</g>
+<circle cx="142.513" cy="139.906" r="8.61759" transform="rotate(-96 142.513 139.906)" fill="white" fill-opacity="0.26"/>
+<ellipse cx="259.767" cy="127.749" rx="25.9192" ry="33.119" transform="rotate(-96 259.767 127.749)" fill="white"/>
+<mask id="mask1_760_242" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="226" y="101" width="67" height="53">
+<ellipse cx="259.764" cy="127.747" rx="25.9192" ry="33.119" transform="rotate(-96 259.764 127.747)" fill="white"/>
+</mask>
+<g mask="url(#mask1_760_242)">
+<ellipse cx="263.328" cy="145.958" rx="21.2449" ry="21.2228" transform="rotate(-96 263.328 145.958)" fill="#010101"/>
+</g>
+<circle cx="272.948" cy="129.472" r="8.61759" transform="rotate(-96 272.948 129.472)" fill="white" fill-opacity="0.26"/>
+<path d="M249.75 211.62L248.742 212.715C230.07 233.008 201.01 240.054 175.117 230.566" stroke="black" stroke-opacity="0.74" stroke-width="12.4752" stroke-linecap="round"/>
+<path d="M125.605 50.7292C122.997 27.8251 140.912 7.75498 163.964 7.75498H191.032L227.19 3.88585C244.291 2.05586 259.896 13.762 262.924 30.6924L245.442 34.5807C245.442 24.8316 237.065 17.1905 227.357 18.0846L218.237 18.9246L191.032 21.4302L165.373 21.4302C150.19 21.4302 139.51 36.3605 144.414 50.7292H125.605Z" fill="#CCB8FF"/>
 </svg>
