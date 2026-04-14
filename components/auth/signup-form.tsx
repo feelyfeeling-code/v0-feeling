@@ -206,13 +206,13 @@ export function SignupForm() {
               </div>
 
               <div className="space-y-4">
-                <div className="items-start gap-3">
+                <div className="flex items-start gap-3">
                   <Checkbox
                     id="terms"
                     checked={acceptTerms}
                     onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
                   />
-                  <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
+                  <Label htmlFor="terms" className="block text-sm leading-relaxed cursor-pointer">
                     J&apos;accepte les{' '}
                     <Link href="/cgu" className="text-primary hover:underline">
                       conditions générales d&apos;utilisation
