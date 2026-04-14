@@ -39,7 +39,7 @@ export function LandingPage() {
             <div className="flex-1 text-center lg:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-balance">
                 Le bon job, c&apos;est celui avec lequel tu as un bon{' '}
-                <FeelingLogoInline color="var(--color-primary)" />
+                <FeelingLogoInline color="var(--color-primary)" heightEm={1.1} />
               </h1>
               <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl">
                 Feeling t&apos;aide à trouver un job qui te ressemble vraiment. 

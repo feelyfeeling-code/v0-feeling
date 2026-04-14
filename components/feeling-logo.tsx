@@ -72,19 +72,19 @@ interface FeelingLogoInlineProps {
   /** Couleur CSS (ex: "var(--color-primary)", "#D4C4FB"). Par défaut : currentColor. */
   color?: string
   className?: string
+  /** Hauteur du logo en em, relative à la taille de fonte environnante. Défaut : 0.75. */
+  heightEm?: number
 }
 
 /**
  * Logo "feeling" inline, calibré pour s'aligner dans une ligne de texte.
- * La hauteur vaut 0.75em afin de correspondre à la hauteur de capitale
- * de la police environnante, quelle que soit la taille de fonte.
  */
-export function FeelingLogoInline({ color, className }: FeelingLogoInlineProps) {
+export function FeelingLogoInline({ color, className, heightEm = 0.75 }: FeelingLogoInlineProps) {
   return (
     <LogoSvg
       style={{
         display: 'inline-block',
-        height: '0.75em',
+        height: `${heightEm}em`,
         width: 'auto',
         verticalAlign: 'middle',
         position: 'relative',
