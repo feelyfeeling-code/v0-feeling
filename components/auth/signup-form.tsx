@@ -206,7 +206,7 @@ export function SignupForm() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
+                <div className="items-start gap-3">
                   <Checkbox
                     id="terms"
                     checked={acceptTerms}
