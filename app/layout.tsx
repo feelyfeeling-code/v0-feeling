@@ -99,12 +99,12 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <Script
-          id="cookiebot"
+        <script
+          id="Cookiebot"
           src="https://consent.cookiebot.com/uc.js"
           data-cbid="e863569c-dabb-4d7b-85c1-c6eb0c10da0f"
           data-blockingmode="auto"
-          strategy="beforeInteractive"
+          async
         />
         {process.env.NODE_ENV === "production" && (
           <Script id="ms-clarity" strategy="afterInteractive">

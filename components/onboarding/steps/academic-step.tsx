@@ -93,8 +93,7 @@ export function AcademicStep({ data, onUpdate, onNext, onPrev }: AcademicStepPro
     !!data.education_level &&
     !!data.graduation_date &&
     data.diploma_name.trim().length > 0 &&
-    data.school_name.trim().length > 0 &&
-    data.field_of_study.length > 0
+    data.school_name.trim().length > 0
 
   return (
     <div className="max-w-xl mx-auto py-8 relative">

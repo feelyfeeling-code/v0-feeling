@@ -135,9 +135,6 @@ export function DreamJobStep({
     }
   }
 
-  // US 9.1 : au moins un intitulé de poste requis pour valider l'onboarding.
-  const canComplete = jobTitlesList.length > 0
-
   return (
     <div className="max-w-2xl mx-auto py-8 relative">
       <button
@@ -359,7 +356,7 @@ export function DreamJobStep({
       <div className="mt-10 max-w-md mx-auto">
         <Button
           onClick={onComplete}
-          disabled={!canComplete || isSubmitting}
+          disabled={isSubmitting}
           className="w-full h-14 rounded-full bg-primary text-foreground hover:bg-primary/90 text-base font-bold disabled:opacity-60"
         >
           {isSubmitting ? (
