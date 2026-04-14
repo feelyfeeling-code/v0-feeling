@@ -214,11 +214,11 @@ export function SignupForm() {
                   />
                   <Label htmlFor="terms" className="block text-sm leading-relaxed cursor-pointer">
                     J&apos;accepte les{' '}
-                    <Link href="/cgu" className="text-primary hover:underline">
+                    <Link href="/cgu" className="text-primary hover:underline" target="_blank">
                       conditions générales d&apos;utilisation
                     </Link>{' '}
                     et la{' '}
-                    <Link href="/confidentialite" className="text-primary hover:underline">
+                    <Link href="/confidentialite" className="text-primary hover:underline" target="_blank">
                       politique de confidentialité
                     </Link>
                   </Label>
