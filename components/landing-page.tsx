@@ -13,7 +13,7 @@ export function LandingPage() {
       {/* Header */}
       <header className="w-full border-b border-border bg-background sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <FeelingLogo size="md" />
+          <FeelingLogo size="lg" />
           
           <div className="flex items-center gap-3">
             <Button 
@@ -34,10 +34,6 @@ export function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-20 right-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-48 h-48 bg-accent/20 rounded-full blur-3xl" />
-        
         <div className="container mx-auto px-4 relative">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
             <div className="flex-1 text-center lg:text-left">
@@ -76,14 +72,6 @@ export function LandingPage() {
             <div className="flex-1 flex justify-center">
               <div className="relative">
                 <FeelyMascot variant="purple" size="xl" speechBubble="Salut ! Je suis Feely" />
-                {/* Decorative paper plane */}
-                <svg 
-                  className="absolute -top-10 -right-10 w-20 h-20 text-accent"
-                  viewBox="0 0 100 100"
-                  fill="currentColor"
-                >
-                  <path d="M10 90 L90 50 L10 10 L30 50 Z" opacity="0.8" />
-                </svg>
               </div>
             </div>
           </div>
