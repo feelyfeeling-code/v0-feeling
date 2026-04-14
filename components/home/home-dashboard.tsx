@@ -20,7 +20,7 @@ function DailyLimitBadge({ count, limit }: { count: number; limit: number }) {
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full mb-2 ${
+      className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full mb-2 ml-3 ${
         exceeded
           ? 'bg-destructive/10 text-destructive'
           : remaining === 1
@@ -168,6 +168,24 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* Loading overlay */}
+      {isAnalyzing && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/90 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-6 text-center px-4">
+            <FeelyMascot variant="purple" size="xl" className="animate-bounce" />
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold">Feely analyse l&apos;offre&hellip;</h2>
+              <p className="text-muted-foreground">Ça peut prendre quelques secondes, patience !</p>
+            </div>
+            <div className="flex gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary animate-bounce [animation-delay:0ms]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-primary animate-bounce [animation-delay:150ms]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-primary animate-bounce [animation-delay:300ms]" />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Welcome popup */}
       {showWelcome && (
         <WelcomePopup 
