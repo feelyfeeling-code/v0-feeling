@@ -1,54 +1,59 @@
-'use client'
+"use client";
 
-import { useState, type KeyboardEvent } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useState, type KeyboardEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { FeelyMascot } from '@/components/feely-mascot'
-import { ArrowLeft, Plus, X, HelpCircle, Loader2 } from 'lucide-react'
-import type { OnboardingData } from '../onboarding-flow'
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { FeelyMascot } from "@/components/feely-mascot";
+import { ArrowLeft, Plus, X, HelpCircle, Loader2 } from "lucide-react";
+import type { OnboardingData } from "../onboarding-flow";
 
 interface DreamJobStepProps {
-  data: OnboardingData['dreamJob']
-  onUpdate: (updates: Partial<OnboardingData['dreamJob']>) => void
-  onComplete: () => void
-  onPrev: () => void
-  isSubmitting: boolean
+  data: OnboardingData["dreamJob"];
+  onUpdate: (updates: Partial<OnboardingData["dreamJob"]>) => void;
+  onComplete: () => void;
+  onPrev: () => void;
+  isSubmitting: boolean;
 }
 
 const RADIUS_OPTIONS: { value: string; label: string }[] = [
-  { value: '10', label: '10 km' },
-  { value: '20', label: '20 km' },
-  { value: '40', label: '40 km' },
-  { value: '50', label: '50 km' },
-  { value: '100', label: '100 km' },
-  { value: '0', label: 'Indifférent' },
-]
+  { value: "10", label: "10 km" },
+  { value: "20", label: "20 km" },
+  { value: "40", label: "40 km" },
+  { value: "50", label: "50 km" },
+  { value: "100", label: "100 km" },
+  { value: "0", label: "Indifférent" },
+];
 
 const SALARY_OPTIONS: { value: string; label: string }[] = [
-  { value: 'less_30k', label: 'Moins de 30k €' },
-  { value: '30_40k', label: '30 - 40k €' },
-  { value: '40_50k', label: '40 - 50k €' },
-  { value: '50_60k', label: '50 - 60k €' },
-  { value: '60_80k', label: '60 - 80k €' },
-  { value: '80_100k', label: '80 - 100k €' },
-  { value: 'more_100k', label: 'Plus de 100k €' },
-  { value: 'no_preference', label: 'Pas de préférence' },
-]
+  { value: "less_30k", label: "Moins de 30k €" },
+  { value: "30_40k", label: "30 - 40k €" },
+  { value: "40_50k", label: "40 - 50k €" },
+  { value: "50_60k", label: "50 - 60k €" },
+  { value: "60_80k", label: "60 - 80k €" },
+  { value: "80_100k", label: "80 - 100k €" },
+  { value: "more_100k", label: "Plus de 100k €" },
+  { value: "no_preference", label: "Pas de préférence" },
+];
 
 const REMOTE_OPTIONS: { value: string; label: string }[] = [
-  { value: 'full_remote', label: 'Full remote' },
-  { value: 'hybrid', label: 'Hybride' },
-  { value: 'onsite', label: 'Présentiel' },
-  { value: 'flexible', label: 'Flexible' },
-]
+  { value: "full_remote", label: "Full remote" },
+  { value: "hybrid", label: "Hybride" },
+  { value: "onsite", label: "Présentiel" },
+  { value: "flexible", label: "Flexible" },
+];
 
 export function DreamJobStep({
   data,
@@ -57,83 +62,83 @@ export function DreamJobStep({
   onPrev,
   isSubmitting,
 }: DreamJobStepProps) {
-  const [jobTitleInput, setJobTitleInput] = useState('')
-  const [locationInput, setLocationInput] = useState('')
-  const [industryInput, setIndustryInput] = useState('')
+  const [jobTitleInput, setJobTitleInput] = useState("");
+  const [locationInput, setLocationInput] = useState("");
+  const [industryInput, setIndustryInput] = useState("");
 
   // Garde-fous : protège contre un état hydraté corrompu.
-  const jobTitlesList = data.job_titles ?? []
-  const locationsList = data.locations ?? []
-  const industriesList = data.industries ?? []
-  const salaryRange = data.salary_range ?? ''
-  const remotePref = data.remote_preference ?? ''
-  const locationRadius = data.location_radius ?? 40
+  const jobTitlesList = data.job_titles ?? [];
+  const locationsList = data.locations ?? [];
+  const industriesList = data.industries ?? [];
+  const salaryRange = data.salary_range ?? "";
+  const remotePref = data.remote_preference ?? "";
+  const locationRadius = data.location_radius ?? 40;
 
   const addJobTitle = () => {
-    const value = jobTitleInput.trim()
-    if (!value) return
+    const value = jobTitleInput.trim();
+    if (!value) return;
     if (jobTitlesList.includes(value)) {
-      setJobTitleInput('')
-      return
+      setJobTitleInput("");
+      return;
     }
-    onUpdate({ job_titles: [...jobTitlesList, value] })
-    setJobTitleInput('')
-  }
+    onUpdate({ job_titles: [...jobTitlesList, value] });
+    setJobTitleInput("");
+  };
 
   const removeJobTitle = (value: string) => {
-    onUpdate({ job_titles: jobTitlesList.filter((t) => t !== value) })
-  }
+    onUpdate({ job_titles: jobTitlesList.filter((t) => t !== value) });
+  };
 
   const handleJobTitleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      addJobTitle()
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addJobTitle();
     }
-  }
+  };
 
   const addLocation = () => {
-    const value = locationInput.trim()
-    if (!value) return
+    const value = locationInput.trim();
+    if (!value) return;
     if (locationsList.includes(value)) {
-      setLocationInput('')
-      return
+      setLocationInput("");
+      return;
     }
-    onUpdate({ locations: [...locationsList, value] })
-    setLocationInput('')
-  }
+    onUpdate({ locations: [...locationsList, value] });
+    setLocationInput("");
+  };
 
   const removeLocation = (value: string) => {
-    onUpdate({ locations: locationsList.filter((l) => l !== value) })
-  }
+    onUpdate({ locations: locationsList.filter((l) => l !== value) });
+  };
 
   const addIndustry = () => {
-    const value = industryInput.trim()
-    if (!value) return
+    const value = industryInput.trim();
+    if (!value) return;
     if (industriesList.includes(value)) {
-      setIndustryInput('')
-      return
+      setIndustryInput("");
+      return;
     }
-    onUpdate({ industries: [...industriesList, value] })
-    setIndustryInput('')
-  }
+    onUpdate({ industries: [...industriesList, value] });
+    setIndustryInput("");
+  };
 
   const removeIndustry = (value: string) => {
-    onUpdate({ industries: industriesList.filter((i) => i !== value) })
-  }
+    onUpdate({ industries: industriesList.filter((i) => i !== value) });
+  };
 
   const handleLocationKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      addLocation()
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addLocation();
     }
-  }
+  };
 
   const handleIndustryKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      addIndustry()
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addIndustry();
     }
-  }
+  };
 
   return (
     <div className="max-w-2xl mx-auto py-8 relative">
@@ -310,7 +315,10 @@ export function DreamJobStep({
               value={salaryRange}
               onValueChange={(value) => onUpdate({ salary_range: value })}
             >
-              <SelectTrigger id="salary-range" className="w-full !h-12 rounded-full">
+              <SelectTrigger
+                id="salary-range"
+                className="w-full !h-12 rounded-full"
+              >
                 <SelectValue placeholder="Ta fourchette souhaitée" />
               </SelectTrigger>
               <SelectContent>
@@ -324,21 +332,55 @@ export function DreamJobStep({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="remote-pref" className="text-base font-semibold inline-flex items-center gap-2">
+            <Label
+              htmlFor="remote-pref"
+              className="text-base font-semibold inline-flex items-center gap-2"
+            >
               Ton rapport avec télétravail&nbsp;?
-              <span
-                title="Full remote = 100 % à distance. Hybride = mix bureau/maison. Présentiel = 100 % sur site. Flexible = au cas par cas."
-                aria-label="Aide sur les options de télétravail"
-                className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/30 cursor-help"
-              >
-                <HelpCircle className="w-3.5 h-3.5" />
-              </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Aide sur les options de télétravail"
+                    className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/30 cursor-help focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  className="bg-primary text-foreground rounded-2xl px-4 py-3 text-sm shadow-lg [&_svg]:fill-primary [&_svg]:bg-primary"
+                >
+                  <ul className="space-y-1.5">
+                    <li>
+                      <span className="font-semibold">Full remote</span> : 100 %
+                      à distance
+                    </li>
+                    <li>
+                      <span className="font-semibold">Hybride</span> : mix
+                      bureau / maison
+                    </li>
+                    <li>
+                      <span className="font-semibold">Présentiel</span> : 100 %
+                      sur site
+                    </li>
+                    <li>
+                      <span className="font-semibold">Flexible</span> : au cas
+                      par cas
+                    </li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
             </Label>
             <Select
               value={remotePref}
               onValueChange={(value) => onUpdate({ remote_preference: value })}
             >
-              <SelectTrigger id="remote-pref" className="w-full !h-12 rounded-full">
+              <SelectTrigger
+                id="remote-pref"
+                className="w-full !h-12 rounded-full"
+              >
                 <SelectValue placeholder="Ex : hybride, full remote..." />
               </SelectTrigger>
               <SelectContent>
@@ -365,10 +407,10 @@ export function DreamJobStep({
               Enregistrement...
             </>
           ) : (
-            'Enregistrer'
+            "Enregistrer"
           )}
         </Button>
       </div>
     </div>
-  )
+  );
 }
