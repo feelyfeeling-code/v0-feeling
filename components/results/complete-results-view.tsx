@@ -42,6 +42,7 @@ interface Analysis {
 
 interface CompleteResultsViewProps {
   analysis: Analysis
+  userId: string
 }
 
 // US 15.1 : verdict précis sur 3 niveaux.
@@ -163,8 +164,26 @@ function SectionCard({
   )
 }
 
-export function CompleteResultsView({ analysis }: CompleteResultsViewProps) {
+export function CompleteResultsView({ analysis, userId }: CompleteResultsViewProps) {
   const router = useRouter()
+  const [isMockCompleting, setIsMockCompleting] = useState(false)
+
+  const handleMockComplete = async () => {
+    setIsMockCompleting(true)
+    try {
+      const response = await fetch('/api/dev/mock-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysisId: analysis.id, userId }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      router.refresh()
+    } catch (error) {
+      console.error(error)
+      setIsMockCompleting(false)
+    }
+  }
 
   // US 15.1 : pondération 50% soft (personnalité + valeurs) + 50% hard (compétences).
   // Soft = moyenne simple des deux dimensions soft ; Hard = skills_score.
@@ -425,6 +444,20 @@ export function CompleteResultsView({ analysis }: CompleteResultsViewProps) {
           </section>
         </div>
       </main>
+
+      {/* DEV ONLY — mock complete si pas de skills */}
+      {process.env.NODE_ENV === 'development' && !hasSkills && (
+        <div className="fixed bottom-4 right-4 z-50 bg-yellow-100 border-2 border-yellow-400 rounded-2xl p-4 shadow-xl max-w-xs">
+          <p className="text-xs font-bold text-yellow-800 mb-3 uppercase tracking-wide">⚙️ Dev — Finaliser le mock</p>
+          <button
+            onClick={handleMockComplete}
+            disabled={isMockCompleting}
+            className="w-full text-xs px-3 py-2 rounded-lg bg-yellow-200 hover:bg-yellow-300 font-medium text-yellow-900 disabled:opacity-50 transition-colors"
+          >
+            {isMockCompleting ? 'En cours...' : '🔧 Ajouter mock skills et rafraîchir'}
+          </button>
+        </div>
+      )}
 
       <Footer />
     </div>

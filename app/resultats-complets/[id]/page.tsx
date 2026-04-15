@@ -31,5 +31,5 @@ export default async function CompleteResultsPage({ params }: Props) {
     notFound()
   }
 
-  return <CompleteResultsView analysis={analysis} />
+  return <CompleteResultsView analysis={analysis} userId={user.id} />
 }
