@@ -293,8 +293,10 @@ export function OnboardingFlow({ userId, firstName }: OnboardingFlowProps) {
     }
   }
 
-  const handleExit = () => {
+  const handleExit = async () => {
     if (confirm('Es-tu sûr de vouloir quitter ? Tes réponses ne seront pas sauvegardées.')) {
+      const supabase = createClient()
+      await supabase.auth.signOut()
       router.push('/')
     }
   }
