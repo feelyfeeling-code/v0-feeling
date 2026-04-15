@@ -91,7 +91,7 @@ export function LandingPage() {
                   <FeelingLogoInline />, qu&apos;est-ce que c&apos;est ?
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Feeling, c&apos;est Feely ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 
+                  Feeling, c&apos;est ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 
                   trouver un job qui te ressemble vraiment. Pas juste un job qui coche 
                   les cases, un job qui colle avec ta personnalité et tes valeurs.
                 </p>
