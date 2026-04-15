@@ -223,17 +223,6 @@ export function SignupForm() {
                     </Link>
                   </Label>
                 </div>
-
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="newsletter"
-                    checked={acceptNewsletter}
-                    onCheckedChange={(checked) => setAcceptNewsletter(checked as boolean)}
-                  />
-                  <Label htmlFor="newsletter" className="text-sm leading-relaxed cursor-pointer">
-                    Je souhaite recevoir des conseils et actualités de Feeling par email
-                  </Label>
-                </div>
               </div>
 
               <div className="flex gap-3">
