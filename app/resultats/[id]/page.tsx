@@ -42,9 +42,10 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   const hasTechnicalProfile = technicalSkills && technicalSkills.length > 0
   
   return (
-    <ResultsView 
-      analysis={analysis} 
+    <ResultsView
+      analysis={analysis}
       hasTechnicalProfile={hasTechnicalProfile}
+      userId={user.id}
     />
   )
 }

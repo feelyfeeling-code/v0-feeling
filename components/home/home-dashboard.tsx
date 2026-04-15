@@ -94,7 +94,11 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
-      router.push(`/resultats-complets/${data.analysisId}`)
+      // no_skills suit le vrai flow : résultats rapides d'abord
+      const route = preset === 'no_skills'
+        ? `/resultats/${data.analysisId}`
+        : `/resultats-complets/${data.analysisId}`
+      router.push(route)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Erreur mock')
       setIsAnalyzing(false)
