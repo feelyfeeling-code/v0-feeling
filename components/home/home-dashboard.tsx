@@ -84,6 +84,27 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
     router.refresh()
   }
 
+  const handleMockAnalysis = async (preset: string) => {
+    setIsAnalyzing(true)
+    try {
+      const response = await fetch('/api/dev/mock-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, preset }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      // no_skills suit le vrai flow : résultats rapides d'abord
+      const route = preset === 'no_skills'
+        ? `/resultats/${data.analysisId}`
+        : `/resultats-complets/${data.analysisId}`
+      router.push(route)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Erreur mock')
+      setIsAnalyzing(false)
+    }
+  }
+
   const submitAnalysis = async (body: Record<string, unknown>) => {
     setIsAnalyzing(true)
     try {
@@ -482,6 +503,30 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
           </section>
         )}
       </main>
+
+      {/* DEV ONLY — panneau de mock analyse */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 right-4 z-50 bg-yellow-100 border-2 border-yellow-400 rounded-2xl p-4 shadow-xl max-w-xs">
+          <p className="text-xs font-bold text-yellow-800 mb-3 uppercase tracking-wide">⚙️ Dev — Mock analyse</p>
+          <div className="flex flex-col gap-2">
+            {[
+              { preset: 'good', label: '✅ Bon match (78%)' },
+              { preset: 'average', label: '🟡 Match moyen (51%)' },
+              { preset: 'bad', label: '❌ Mauvais match + dealbreakers' },
+              { preset: 'no_skills', label: '🔧 Sans profil technique' },
+            ].map(({ preset, label }) => (
+              <button
+                key={preset}
+                onClick={() => handleMockAnalysis(preset)}
+                disabled={isAnalyzing}
+                className="text-xs text-left px-3 py-2 rounded-lg bg-yellow-200 hover:bg-yellow-300 font-medium text-yellow-900 disabled:opacity-50 transition-colors"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

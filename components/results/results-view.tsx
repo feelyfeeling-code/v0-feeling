@@ -40,6 +40,7 @@ interface Analysis {
 interface ResultsViewProps {
   analysis: Analysis
   hasTechnicalProfile: boolean | null
+  userId: string
 }
 
 // US 13.1 : verdict clair dérivé du score global.
@@ -161,15 +162,33 @@ function SectionCard({
   )
 }
 
-export function ResultsView({ analysis, hasTechnicalProfile }: ResultsViewProps) {
+export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsViewProps) {
   const router = useRouter()
   const verdict = getVerdict(analysis.overall_score)
+  const [isMockCompleting, setIsMockCompleting] = useState(false)
 
   const handleSignOut = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/')
     router.refresh()
+  }
+
+  const handleMockComplete = async (userId: string) => {
+    setIsMockCompleting(true)
+    try {
+      const response = await fetch('/api/dev/mock-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysisId: analysis.id, userId }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      router.push(`/resultats-complets/${analysis.id}`)
+    } catch (error) {
+      console.error(error)
+      setIsMockCompleting(false)
+    }
   }
 
   // US 13.2 : les phrases "Pourquoi ça match" viennent du champ strengths[].
@@ -334,6 +353,20 @@ export function ResultsView({ analysis, hasTechnicalProfile }: ResultsViewProps)
           )}
         </div>
       </main>
+
+      {/* DEV ONLY — finaliser l'analyse avec mock skills */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 right-4 z-50 bg-yellow-100 border-2 border-yellow-400 rounded-2xl p-4 shadow-xl max-w-xs">
+          <p className="text-xs font-bold text-yellow-800 mb-3 uppercase tracking-wide">⚙️ Dev — Finaliser le mock</p>
+          <button
+            onClick={() => handleMockComplete(userId)}
+            disabled={isMockCompleting}
+            className="w-full text-xs px-3 py-2 rounded-lg bg-yellow-200 hover:bg-yellow-300 font-medium text-yellow-900 disabled:opacity-50 transition-colors"
+          >
+            {isMockCompleting ? 'En cours...' : '🔧 Ajouter mock skills → résultats complets'}
+          </button>
+        </div>
+      )}
 
       <Footer />
     </div>
