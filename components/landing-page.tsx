@@ -35,15 +35,14 @@ export function LandingPage() {
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 overflow-hidden">
         <div className="container mx-auto px-4 relative">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-            <div className="flex-1 text-center lg:text-left">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-14">
+            <div className="flex-2 text-center lg:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-balance">
-                Le bon job, c&apos;est celui avec lequel tu as un bon{' '}
+               Bac+5 en recherche&#160;? Postule là où tu as un bon{' '}
                 <FeelingLogoInline color="var(--color-primary)" heightEm={1.1} />
               </h1>
               <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl">
-                Feeling t&apos;aide à trouver un job qui te ressemble vraiment. 
-                Pas juste un job qui coche les cases, un job qui colle avec ta personnalité et tes valeurs.
+                En Bac+5, tu as souvent plusieurs options devant toi. Pas toujours facile de savoir laquelle est vraiment faite pour toi. Feeling t'aide à comprendre si une offre colle avec qui tu es et ce que tu recherches vraiment.
               </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
