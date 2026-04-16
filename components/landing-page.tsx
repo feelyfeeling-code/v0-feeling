@@ -42,7 +42,8 @@ export function LandingPage() {
                 <FeelingLogoInline color="var(--color-primary)" heightEm={1.1} />
               </h1>
               <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl">
-                Feeling t&apos;aide à trouver un job qui te ressemble vraiment. 
+                Jeune diplômé·e Bac+5, ton premier job ne se choisit pas au feeling du recruteur — mais au tien.
+                Feeling t&apos;aide à trouver un job qui te ressemble vraiment.
                 Pas juste un job qui coche les cases, un job qui colle avec ta personnalité et tes valeurs.
               </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
