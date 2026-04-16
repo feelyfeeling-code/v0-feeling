@@ -38,40 +38,40 @@ export function LandingPage() {
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
             <div className="flex-1 text-center lg:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-balance">
-                Le bon job, c&apos;est celui avec lequel tu as un bon{' '}
-                <FeelingLogoInline color="var(--color-primary)" heightEm={1.1} />
+                Tu n&apos;as pas fait 5 ans d&apos;études pour finir{' '}
+                <span className="italic">n&apos;importe où</span>.
               </h1>
               <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl">
-                Feeling t&apos;aide à trouver un job qui te ressemble vraiment. 
-                Pas juste un job qui coche les cases, un job qui colle avec ta personnalité et tes valeurs.
+                <FeelingLogoInline color="var(--color-primary)" heightEm={1} /> décode les offres d&apos;emploi pour les Bac+5.
+                On regarde si la boîte te ressemble — pas si ton CV rentre dans la case.
               </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   asChild
                   className="bg-foreground text-background hover:bg-foreground/90 text-lg px-8"
                 >
                   <Link href="/inscription">
-                    Commencer gratuitement
+                    Commencer — c&apos;est gratuit
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Link>
                 </Button>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="outline"
                   asChild
                   className="text-lg px-8"
                 >
                   <Link href="#comment-ca-marche">
-                    Comment ça marche ?
+                    Le mode d&apos;emploi
                   </Link>
                 </Button>
               </div>
             </div>
-            
+
             <div className="flex-1 flex justify-center">
               <div className="relative">
-                <FeelyMascot variant="purple" size="xl" speechBubble="Salut ! Je suis Feely" />
+                <FeelyMascot variant="purple" size="xl" speechBubble="Décodeur d'offres, bonjour" />
               </div>
             </div>
           </div>
@@ -84,16 +84,16 @@ export function LandingPage() {
           <div className="max-w-4xl mx-auto bg-background rounded-3xl p-8 md:p-12 shadow-sm border border-border">
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="flex-shrink-0">
-                <FeelyMascot variant="blue" size="lg" speechBubble="Ici Feely" />
+                <FeelyMascot variant="blue" size="lg" speechBubble="Je lis entre les lignes" />
               </div>
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                  <FeelingLogoInline />, qu&apos;est-ce que c&apos;est ?
+                  C&apos;est quoi <FeelingLogoInline /> au juste ?
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Feeling, c&apos;est ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 
-                  trouver un job qui te ressemble vraiment. Pas juste un job qui coche 
-                  les cases, un job qui colle avec ta personnalité et tes valeurs.
+                  Un outil pour les jeunes diplômé·es qui en ont marre de postuler dans le vide.
+                  Tu colles une offre, on la passe au filtre de <em>qui tu es</em> — pas de ce que
+                  ton CV raconte. Résultat : tu sais en 30 secondes si la boîte vaut ta lettre de motivation.
                 </p>
               </div>
             </div>
@@ -107,7 +107,7 @@ export function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
             Comment ça marche ?
           </h2>
-          
+
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Step 1 */}
             <div className="relative">
@@ -115,38 +115,38 @@ export function LandingPage() {
                 <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
                   1
                 </div>
-                <h3 className="text-xl font-bold mb-3">On a appris à te connaître</h3>
+                <h3 className="text-xl font-bold mb-3">On prend ton empreinte</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Tu as répondu à quelques questions sur ta personnalité, tes valeurs et 
-                  tes ambitions. Pas ton CV, toi. Et c&apos;est là que tout commence.
+                  Dix minutes de questions sur qui tu es, ce que tu supportes,
+                  ce que tu viens chercher après 5 ans d&apos;études. Pas ton CV — toi.
                 </p>
               </div>
             </div>
-            
+
             {/* Step 2 */}
             <div className="relative md:mt-12">
               <div className="bg-primary/30 rounded-2xl p-6 h-full">
                 <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
                   2
                 </div>
-                <h3 className="text-xl font-bold mb-3">Tu testes une offre</h3>
+                <h3 className="text-xl font-bold mb-3">Tu balances une offre</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Colle le lien d&apos;une offre qui t&apos;intéresse. Feely analyse si elle te 
-                  ressemble vraiment.
+                  Le lien d&apos;une annonce qui t&apos;attire (ou t&apos;intrigue, ou t&apos;angoisse).
+                  Feely la passe au scanner en quelques secondes.
                 </p>
               </div>
             </div>
-            
+
             {/* Step 3 */}
             <div className="relative md:mt-24">
               <div className="bg-accent/30 rounded-2xl p-6 h-full">
                 <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
                   3
                 </div>
-                <h3 className="text-xl font-bold mb-3">Tu vois les résultats</h3>
+                <h3 className="text-xl font-bold mb-3">Le verdict tombe</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Tu verras si cette offre te ressemble vraiment sur ta personnalité, la 
-                  culture de l&apos;entreprise et tes compétences.
+                  Un score, les vrais points communs, les red flags, et les trucs
+                  que le jargon RH avait glissés sous le tapis. À toi de décider.
                 </p>
                 <div className="flex gap-2 mt-4">
                   <CheckCircle2 className="w-6 h-6 text-accent-foreground" />
@@ -162,38 +162,41 @@ export function LandingPage() {
       {/* Features Section */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-            Pourquoi utiliser Feeling ?
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+            Pensé pour les Bac+5 qui cherchent leur premier poste
           </h2>
-          
+          <p className="text-center text-muted-foreground mb-16 max-w-2xl mx-auto">
+            Pas un énième agrégateur. Pas un coach. Un radar à bullshit calibré pour les jeunes diplômé·es.
+          </p>
+
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <div className="bg-background rounded-2xl p-8 shadow-sm border border-border text-center">
               <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Analyse personnalisée</h3>
+              <h3 className="text-xl font-bold mb-3">On traduit les offres</h3>
               <p className="text-muted-foreground text-sm">
-                Une analyse basée sur ta personnalité unique, pas des critères génériques.
+                &quot;Environnement challengeant&quot; veut dire quoi chez eux ? On te le dit.
               </p>
             </div>
-            
+
             <div className="bg-background rounded-2xl p-8 shadow-sm border border-border text-center">
               <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-6">
                 <Heart className="w-8 h-8 text-accent" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Valeurs alignées</h3>
+              <h3 className="text-xl font-bold mb-3">On repère les red flags</h3>
               <p className="text-muted-foreground text-sm">
-                Découvre si la culture d&apos;entreprise correspond à tes valeurs profondes.
+                &quot;Famille soudée&quot;, &quot;esprit startup&quot;, &quot;mission polyvalente&quot; : on sait ce qui se cache derrière.
               </p>
             </div>
-            
+
             <div className="bg-background rounded-2xl p-8 shadow-sm border border-border text-center">
               <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-6">
                 <Target className="w-8 h-8 text-secondary-foreground" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Points d&apos;attention</h3>
+              <h3 className="text-xl font-bold mb-3">On calibre pour Bac+5</h3>
               <p className="text-muted-foreground text-sm">
-                Identifie les aspects à surveiller avant de postuler.
+                Salaire, autonomie, formation : on analyse au niveau d&apos;un premier poste, pas au niveau &quot;5 ans d&apos;XP&quot;.
               </p>
             </div>
           </div>
@@ -206,18 +209,19 @@ export function LandingPage() {
           <div className="max-w-3xl mx-auto text-center">
             <FeelyMascot variant="happy" size="lg" className="mx-auto mb-8" />
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Prêt à trouver un job qui te ressemble ?
+              Allez, on arrête de postuler à l&apos;aveugle ?
             </h2>
             <p className="text-lg text-muted-foreground mb-10">
-              Rejoins Feeling et découvre si tes prochaines opportunités sont vraiment faites pour toi.
+              Dix minutes pour te présenter. Et ensuite, chaque offre passe au filtre.
+              Ton premier poste mérite mieux qu&apos;un coup de dé.
             </p>
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               asChild
               className="bg-foreground text-background hover:bg-foreground/90 text-lg px-10"
             >
               <Link href="/inscription">
-                Commencer maintenant
+                Je crée mon profil
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
             </Button>

@@ -202,16 +202,17 @@ export function TechnicalProfileForm({
       <main className="flex-1 container mx-auto px-4 py-8 max-w-2xl">
         {/* Hero */}
         <div className="flex items-start gap-4 mb-8">
-          <FeelyMascot variant="purple" size="md" speechBubble="Montre tes skills !" />
+          <FeelyMascot variant="purple" size="md" speechBubble="Montre-moi ce que t'as dans la besace" />
           <div>
-            <h1 className="text-2xl font-bold mb-1">Ton profil technique</h1>
+            <h1 className="text-2xl font-bold mb-1">Le volet concret</h1>
             <p className="text-muted-foreground text-sm">
-              Ajoute tes expériences et compétences pour obtenir une analyse complète de ta compatibilité avec les offres.
+              Stages, alternance, projets de fin d&apos;études, outils maîtrisés :
+              tout ce qui compte pour un premier poste. Plus tu es précis, plus l&apos;analyse est juste.
             </p>
             {fromAnalysisId && (
               <div className="mt-3 inline-flex items-center gap-2 bg-primary/20 text-primary-foreground/80 text-xs font-medium px-3 py-1.5 rounded-full">
                 <Sparkles className="w-3 h-3" />
-                On va recalculer ton score avec ces infos
+                On recalcule ton score avec ces infos
               </div>
             )}
           </div>
@@ -220,11 +221,11 @@ export function TechnicalProfileForm({
         <div className="space-y-8">
           {/* Skills section */}
           <section>
-            <h2 className="font-semibold text-lg mb-4">Compétences techniques</h2>
+            <h2 className="font-semibold text-lg mb-4">Ce que tu sais faire</h2>
             <div className="space-y-3">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Ex : React, Python, Figma... (Entrée pour valider)"
+                  placeholder="Ex : SQL, Figma, gestion de projet, anglais C1… (Entrée pour valider)"
                   value={skillInput}
                   onChange={(e) => setSkillInput(e.target.value)}
                   onKeyDown={handleSkillKeyDown}
@@ -261,7 +262,12 @@ export function TechnicalProfileForm({
           {/* Experiences section */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-lg">Expériences professionnelles</h2>
+              <div>
+                <h2 className="font-semibold text-lg">Expériences professionnelles</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  (stage, alternance, projet d&apos;études, job étudiant, associatif…)
+                </p>
+              </div>
               <Button type="button" variant="outline" size="sm" onClick={addExperience}>
                 <Plus className="w-4 h-4 mr-1" />
                 Ajouter
@@ -288,15 +294,15 @@ export function TechnicalProfileForm({
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-muted-foreground">Poste *</label>
                       <Input
-                        placeholder="Ex : Développeur Frontend"
+                        placeholder="Ex : Stagiaire Marketing, Alternant·e Data, Projet tutoré…"
                         value={exp.job_title}
                         onChange={(e) => updateExperience(index, { job_title: e.target.value })}
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Entreprise *</label>
+                      <label className="text-xs font-medium text-muted-foreground">Entreprise / structure *</label>
                       <Input
-                        placeholder="Ex : Acme Corp"
+                        placeholder="Ex : L'Oréal, junior-entreprise, association…"
                         value={exp.company_name}
                         onChange={(e) => updateExperience(index, { company_name: e.target.value })}
                       />
@@ -400,9 +406,9 @@ export function TechnicalProfileForm({
                   </label>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">Missions principales</label>
+                    <label className="text-xs font-medium text-muted-foreground">Ce que tu y as vraiment fait</label>
                     <Textarea
-                      placeholder="Décris tes principales responsabilités et réalisations..."
+                      placeholder="Les missions concrètes, les outils, les livrables — sois précis·e, pas de &quot;j'ai touché à tout&quot;."
                       value={exp.main_tasks}
                       onChange={(e) => updateExperience(index, { main_tasks: e.target.value })}
                       rows={3}

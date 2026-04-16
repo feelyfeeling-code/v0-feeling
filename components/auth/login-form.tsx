@@ -33,7 +33,7 @@ export function LoginForm() {
       return
     }
 
-    toast.success('Connexion réussie !')
+    toast.success('Te voilà de retour.')
     router.push('/accueil')
     router.refresh()
   }
@@ -57,8 +57,8 @@ export function LoginForm() {
           <h1 className="text-3xl font-bold text-center mb-2">
             Ravi de te revoir !
           </h1>
-          <p className="text-2xl font-bold text-center mb-8">
-            Connecte-toi
+          <p className="text-lg text-center text-muted-foreground mb-8">
+            On reprend où on s&apos;était arrêté·e ?
           </p>
 
           {/* Form */}

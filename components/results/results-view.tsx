@@ -51,22 +51,22 @@ function getVerdict(score: number): {
 } {
   if (score >= 70) {
     return {
-      label: 'Fort potentiel',
+      label: 'Ça vaut le coup',
       tone: 'strong',
-      headline: 'Super feeling sur la personnalité & les valeurs',
+      headline: 'Sur ta personnalité et tes valeurs, le courant passe bien.',
     }
   }
   if (score >= 40) {
     return {
-      label: 'Match partiel',
+      label: 'À creuser',
       tone: 'partial',
-      headline: 'Bon feeling sur la personnalité & les valeurs',
+      headline: 'Des points d’accroche, mais quelques zones à éclairer en entretien.',
     }
   }
   return {
-    label: 'Faible adéquation',
+    label: 'Mieux vaut passer',
     tone: 'weak',
-    headline: 'Feeling faible sur la personnalité & les valeurs',
+    headline: 'Sur l’essentiel, l’annonce ne colle pas à ton profil.',
   }
 }
 
@@ -216,7 +216,7 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
             <div className="container mx-auto px-4 py-3 flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
               <p className="text-sm text-destructive font-medium">
-                Critères rédhibitoires détectés :{' '}
+                Un ou plusieurs de tes dealbreakers apparaissent dans l&apos;annonce :{' '}
                 {analysis.dealbreaker_details?.join(', ')}. Score plafonné à 30/100.
               </p>
             </div>
@@ -226,12 +226,12 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
         <div className="container mx-auto px-4 py-10 max-w-4xl space-y-8">
           {/* Titre */}
           <h1 className="text-3xl md:text-4xl font-extrabold border-b border-border pb-3">
-            Ton feeling avec cette offre
+            Le verdict sur cette offre
           </h1>
 
           {/* Récapitulatif de l'offre */}
           <section className="space-y-3">
-            <h2 className="font-bold">Récapitulatif de l&apos;offre :</h2>
+            <h2 className="font-bold">L&apos;annonce, en une ligne :</h2>
             <div className="flex flex-wrap gap-2">
               {(analysis.job_title || analysis.company_name) && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
@@ -275,7 +275,8 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
 
           {/* Intro analyse phase 1 */}
           <p className="text-sm text-muted-foreground">
-            Première analyse basée sur la personnalité, les valeurs et culture de l&apos;entreprise.
+            Première passe : on regarde ce qui compte le plus pour un premier poste —
+            ta personnalité, tes valeurs et la culture affichée par la boîte.
           </p>
 
           {/* Score global + gradient bar */}
@@ -323,30 +324,30 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
           {!hasTechnicalProfile ? (
             <section className="rounded-3xl bg-primary/30 p-6 md:p-8 flex flex-col items-center text-center gap-4">
               <p className="text-base md:text-lg font-medium max-w-xl">
-                Pour une analyse globale, complète ton profil technique pour un feeling
-                encore plus précis.
+                Ajoute tes stages, ton alternance et tes vraies compétences pour voir
+                si la fiche de poste tient aussi la route côté technique.
               </p>
               <Link href={`/profil-technique?from=${analysis.id}`}>
                 <Button
                   size="lg"
                   className="h-12 px-6 rounded-2xl bg-foreground text-background hover:bg-foreground/90 text-base font-bold"
                 >
-                  Compléter mon profil technique
+                  Ajouter mon expérience concrète
                 </Button>
               </Link>
             </section>
           ) : (
             <section className="rounded-3xl bg-accent/30 p-6 md:p-8 flex flex-col items-center text-center gap-4">
               <p className="text-base md:text-lg font-medium max-w-xl">
-                Ton profil technique est déjà renseigné. Consulte l&apos;analyse complète
-                incluant la compatibilité des compétences.
+                Ton expérience concrète est déjà enregistrée. Passe à l&apos;analyse
+                complète — on y ajoute le match sur les compétences attendues.
               </p>
               <Link href={`/resultats-complets/${analysis.id}`}>
                 <Button
                   size="lg"
                   className="h-12 px-6 rounded-2xl bg-foreground text-background hover:bg-foreground/90 text-base font-bold"
                 >
-                  Voir les résultats complets
+                  Voir l&apos;analyse complète
                 </Button>
               </Link>
             </section>

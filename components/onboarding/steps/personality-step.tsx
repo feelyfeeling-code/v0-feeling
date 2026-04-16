@@ -50,16 +50,16 @@ const MAX_TRAITS = 3
 const TRAIT_WEIGHTS = ['50%', '30%', '20%']
 
 const INTEGRATED_TEST_QUESTIONS: { id: string; text: string }[] = [
-  { id: 'q1', text: 'Je me sens à l\'aise dans des situations sociales nouvelles.' },
-  { id: 'q2', text: 'J\'aime planifier les choses à l\'avance plutôt qu\'improviser.' },
-  { id: 'q3', text: 'Je prends des décisions rapidement, même dans l\'incertitude.' },
-  { id: 'q4', text: 'Je préfère travailler en équipe plutôt que seul(e).' },
-  { id: 'q5', text: 'Je suis curieux(se) d\'apprendre des choses hors de mon domaine.' },
-  { id: 'q6', text: 'Je reste calme face à une situation stressante.' },
-  { id: 'q7', text: 'Je n\'hésite pas à exprimer mon désaccord en public.' },
-  { id: 'q8', text: 'Je préfère suivre des règles claires plutôt que de les remettre en question.' },
-  { id: 'q9', text: 'J\'aime résoudre des problèmes complexes et nouveaux.' },
-  { id: 'q10', text: 'Je me remets facilement d\'un échec.' },
+  { id: 'q1', text: 'Je me présente sans stress devant une salle que je ne connais pas.' },
+  { id: 'q2', text: 'J\'avance mieux avec un cadre posé qu\'en improvisant au fil de l\'eau.' },
+  { id: 'q3', text: 'Je tranche vite, même quand il me manque des infos.' },
+  { id: 'q4', text: 'J\'ai besoin de collègues autour de moi pour donner le meilleur.' },
+  { id: 'q5', text: 'Je m\'intéresse à des sujets qui n\'ont rien à voir avec mes études.' },
+  { id: 'q6', text: 'Quand la pression monte (deadline, imprévu), je garde la tête froide.' },
+  { id: 'q7', text: 'Je dis quand je ne suis pas d\'accord, même à quelqu\'un plus haut placé que moi.' },
+  { id: 'q8', text: 'Je fais plus confiance à un process établi qu\'à mon intuition.' },
+  { id: 'q9', text: 'Un problème que personne n\'a encore résolu me donne envie de m\'y coller.' },
+  { id: 'q10', text: 'Un échec me secoue, mais je rebondis vite.' },
 ]
 
 const LIKERT_OPTIONS: { value: number; label: string }[] = [

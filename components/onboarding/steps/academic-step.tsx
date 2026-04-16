@@ -23,12 +23,12 @@ interface AcademicStepProps {
 }
 
 const educationLevels = [
-  { value: 'bac', label: 'BAC' },
-  { value: 'bac+2', label: 'BAC +2' },
-  { value: 'bac+3', label: 'BAC +3' },
-  { value: 'bac+4', label: 'BAC +4' },
-  { value: 'bac+5', label: 'BAC +5' },
-  { value: 'bac+8', label: 'BAC +8' },
+  { value: 'bac+5-master', label: 'BAC +5 – Master universitaire' },
+  { value: 'bac+5-ingenieur', label: 'BAC +5 – École d’ingénieur' },
+  { value: 'bac+5-commerce', label: 'BAC +5 – École de commerce' },
+  { value: 'bac+5-iep', label: 'BAC +5 – IEP / Sciences Po' },
+  { value: 'bac+5-autre', label: 'BAC +5 – Autre école spécialisée' },
+  { value: 'bac+5-en-cours', label: 'BAC +5 en cours (dernière année)' },
 ]
 
 export function AcademicStep({ data, onUpdate, onNext, onPrev }: AcademicStepProps) {

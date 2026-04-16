@@ -30,7 +30,7 @@ export function WelcomePopup({ firstName, onClose }: WelcomePopupProps) {
           </p>
           
           <h2 className="text-2xl md:text-3xl font-bold text-primary mb-4">
-            Dès maintenant, tu peux tester des offres !
+            La chasse aux premiers postes peut commencer.
           </h2>
           
           <p className="text-muted-foreground mb-8">

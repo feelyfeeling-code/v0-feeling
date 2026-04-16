@@ -35,7 +35,7 @@ export function OnboardingTermineView() {
             </p>
 
             <h1 className="text-2xl md:text-3xl font-bold text-primary mb-6">
-              Dès maintenant, tu peux tester des offres&nbsp;!
+              La chasse aux premiers postes peut commencer.
             </h1>
 
             <p className="text-base md:text-lg mb-8">
@@ -46,7 +46,7 @@ export function OnboardingTermineView() {
               onClick={goToAccueil}
               className="h-14 px-8 rounded-2xl bg-foreground text-background hover:bg-foreground/90 text-base font-bold"
             >
-              Tester une offre
+              Tester ma première offre
             </Button>
           </div>
 

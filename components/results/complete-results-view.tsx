@@ -55,20 +55,20 @@ function getVerdict(score: number): {
     return {
       label: 'Fort potentiel',
       tone: 'strong',
-      headline: 'Super feeling sur le profil complet',
+      headline: 'Profil complet aligné avec l’annonce — fonce.',
     }
   }
   if (score >= 40) {
     return {
       label: 'Match partiel',
       tone: 'partial',
-      headline: 'Bon feeling mais points à travailler',
+      headline: 'Des bases solides, mais quelques points à défendre en entretien.',
     }
   }
   return {
     label: 'Faible adéquation',
     tone: 'weak',
-    headline: 'Cette offre colle peu avec ton profil',
+    headline: 'Sur le profil complet, l’annonce ne joue pas en ta faveur.',
   }
 }
 
@@ -272,12 +272,12 @@ export function CompleteResultsView({ analysis, userId }: CompleteResultsViewPro
 
           {/* Titre */}
           <h1 className="text-3xl md:text-4xl font-extrabold border-b border-border pb-3">
-            Ton feeling complet avec cette offre
+            Le verdict complet
           </h1>
 
           {/* Récapitulatif de l'offre */}
           <section className="space-y-3">
-            <h2 className="font-bold">Récapitulatif de l&apos;offre :</h2>
+            <h2 className="font-bold">L&apos;annonce, en une ligne :</h2>
             <div className="flex flex-wrap gap-2">
               {(analysis.job_title || analysis.company_name) && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
@@ -315,8 +315,8 @@ export function CompleteResultsView({ analysis, userId }: CompleteResultsViewPro
           </section>
 
           <p className="text-sm text-muted-foreground">
-            Analyse finale combinant ta personnalité, tes valeurs et tes compétences
-            techniques.
+            Analyse finale : ta personnalité, tes valeurs et ce que tu as déjà
+            fait côté technique — confrontés à ce que l&apos;annonce réclame vraiment.
           </p>
 
           {/* US 15.1 : score global en grand + barre + verdict */}

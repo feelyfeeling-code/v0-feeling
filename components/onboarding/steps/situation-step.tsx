@@ -33,7 +33,6 @@ const mainCards: {
 const contractTypes: { value: string; label: string }[] = [
   { value: 'cdd', label: 'CDD' },
   { value: 'cdi', label: 'CDI' },
-  { value: 'alternance', label: 'Alternance' },
 ]
 
 export function SituationStep({ data, onUpdate, onNext, onPrev }: SituationStepProps) {

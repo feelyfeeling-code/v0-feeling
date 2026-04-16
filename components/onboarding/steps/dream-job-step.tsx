@@ -38,14 +38,14 @@ const RADIUS_OPTIONS: { value: string; label: string }[] = [
 ];
 
 const SALARY_OPTIONS: { value: string; label: string }[] = [
-  { value: "less_30k", label: "Moins de 30k €" },
-  { value: "30_40k", label: "30 - 40k €" },
-  { value: "40_50k", label: "40 - 50k €" },
-  { value: "50_60k", label: "50 - 60k €" },
-  { value: "60_80k", label: "60 - 80k €" },
-  { value: "80_100k", label: "80 - 100k €" },
-  { value: "more_100k", label: "Plus de 100k €" },
-  { value: "no_preference", label: "Pas de préférence" },
+  { value: "less_30k", label: "Moins de 30k € (brut/an)" },
+  { value: "30_35k", label: "30 – 35k €" },
+  { value: "35_40k", label: "35 – 40k €" },
+  { value: "40_45k", label: "40 – 45k €" },
+  { value: "45_50k", label: "45 – 50k €" },
+  { value: "50_60k", label: "50 – 60k €" },
+  { value: "more_60k", label: "Plus de 60k €" },
+  { value: "no_preference", label: "Je découvre, je ne sais pas encore" },
 ];
 
 const REMOTE_OPTIONS: { value: string; label: string }[] = [

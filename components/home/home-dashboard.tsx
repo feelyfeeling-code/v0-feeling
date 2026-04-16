@@ -30,8 +30,8 @@ function DailyLimitBadge({ count, limit }: { count: number; limit: number }) {
     >
       <span>
         {exceeded
-          ? 'Limite atteinte — reviens demain !'
-          : `${count}/${limit} analyses aujourd'hui`}
+          ? 'Quota du jour épuisé — on remet ça demain.'
+          : `${count}/${limit} offres scannées aujourd'hui`}
       </span>
     </div>
   )
@@ -144,14 +144,14 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
     e.preventDefault()
 
     if (!jobUrl.trim()) {
-      toast.error('Colle le lien d\'une offre d\'emploi')
+      toast.error('Il faut une annonce à décoder — colle le lien.')
       return
     }
 
     try {
       new URL(jobUrl)
     } catch {
-      toast.error('Ce n\'est pas un lien valide')
+      toast.error('Ce lien ne ressemble pas à une URL valide.')
       return
     }
 
@@ -162,15 +162,15 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
     e.preventDefault()
 
     if (!pastedDescription.trim()) {
-      toast.error('Colle le texte de l\'offre')
+      toast.error('Colle-nous le corps de l\'annonce.')
       return
     }
     if (!pastedTitle.trim()) {
-      toast.error('Précise l\'intitulé du poste')
+      toast.error('Dis-nous l\'intitulé du poste.')
       return
     }
     if (!pastedCompany.trim()) {
-      toast.error('Précise le nom de l\'entreprise')
+      toast.error('Dis-nous quelle boîte propose ce poste.')
       return
     }
 
@@ -195,8 +195,8 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
           <div className="flex flex-col items-center gap-6 text-center px-4">
             <FeelyMascot variant="purple" size="xl" className="animate-bounce" />
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold">Feely analyse l&apos;offre&hellip;</h2>
-              <p className="text-muted-foreground">Ça peut prendre quelques secondes, patience !</p>
+              <h2 className="text-2xl font-bold">Feely passe l&apos;annonce au scanner&hellip;</h2>
+              <p className="text-muted-foreground">Quelques secondes, le temps qu&apos;il lise entre les lignes.</p>
             </div>
             <div className="flex gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-primary animate-bounce [animation-delay:0ms]" />
@@ -243,10 +243,11 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-16">
               <div className="flex-1">
                 <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                  Cette offre, est-elle faite pour toi ?
+                  Alors, cette offre, elle tient la route&nbsp;?
                 </h1>
                 <p className="text-muted-foreground mb-6">
-                  Colle le lien de l&apos;offre et voyons si le job te correspond vraiment !
+                  Colle le lien : on décode l&apos;annonce avec tes lunettes de jeune diplômé·e
+                  et on te dit si la boîte te mérite.
                 </p>
 
                 {/* Toggle URL / Coller */}
@@ -406,12 +407,12 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-4">
-                    <FeelingLogoInline />, qu&apos;est-ce que c&apos;est ?
+                    <FeelingLogoInline />, rappel&nbsp;?
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    Feeling, c&apos;est ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 
-                    trouver un job qui te ressemble vraiment. Pas juste un job qui coche 
-                    les cases, un job qui colle avec ta personnalité et tes valeurs.
+                    Feeling, c&apos;est le décodeur d&apos;offres pour les Bac+5 qui démarrent.
+                    Tu colles une annonce, Feely la passe au filtre de ton profil
+                    et te dit si ça vaut ton énergie — ou si on peut passer à la suivante.
                   </p>
                 </div>
               </div>
@@ -423,38 +424,38 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
         <section className="py-12">
           <div className="container mx-auto px-4">
             <h2 className="text-2xl font-bold mb-8">Comment ça marche ?</h2>
-            
+
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-secondary rounded-2xl p-6">
                 <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
                   1
                 </div>
-                <h3 className="font-bold mb-2">On a appris à te connaître</h3>
+                <h3 className="font-bold mb-2">On a pris ton empreinte</h3>
                 <p className="text-sm text-muted-foreground">
-                  Tu as répondu à quelques questions sur ta personnalité, tes valeurs et 
-                  tes ambitions. Pas ton CV, toi. Et c&apos;est là que tout commence.
+                  Personnalité, valeurs, cadre recherché pour un premier poste de Bac+5 :
+                  tout est enregistré. Pas besoin d&apos;y revenir.
                 </p>
               </div>
-              
+
               <div className="bg-primary/30 rounded-2xl p-6">
                 <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
                   2
                 </div>
-                <h3 className="font-bold mb-2">Tu testes une offre</h3>
+                <h3 className="font-bold mb-2">Tu balances une offre</h3>
                 <p className="text-sm text-muted-foreground">
-                  Colle le lien d&apos;une offre qui t&apos;intéresse. Feely analyse si elle te 
-                  ressemble vraiment.
+                  Un lien ou le texte brut. Feely lit l&apos;annonce, mot pour mot,
+                  et la compare à qui tu es.
                 </p>
               </div>
-              
+
               <div className="bg-accent/30 rounded-2xl p-6">
                 <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
                   3
                 </div>
-                <h3 className="font-bold mb-2">Tu vois les résultats</h3>
+                <h3 className="font-bold mb-2">Le verdict tombe</h3>
                 <p className="text-sm text-muted-foreground">
-                  Tu verras si cette offre te ressemble vraiment sur ta personnalité, la 
-                  culture de l&apos;entreprise et tes compétences.
+                  Score, vrais points communs, red flags, et les trucs que le jargon RH
+                  essayait de planquer. À toi de décider.
                 </p>
               </div>
             </div>

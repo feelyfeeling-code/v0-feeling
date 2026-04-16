@@ -13,8 +13,8 @@ export function Footer() {
               <FeelingLogo size="lg" className="text-background" asLink={false} />
               <div className="w-px h-12 bg-background/30" />
               <p className="text-lg font-medium leading-tight">
-                Le bon job, c&apos;est celui avec<br />
-                lequel tu as un bon <span className="text-primary">feeling</span>.
+                Le décodeur d&apos;offres d&apos;emploi<br />
+                pour les <span className="text-primary">Bac+5</span> qui démarrent.
               </p>
             </div>
             
