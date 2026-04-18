@@ -252,13 +252,16 @@ export function CompleteResultsView({ analysis, userId }: CompleteResultsViewPro
         {/* US 15.1 : bandeau rouge si rédhibitoire détecté */}
         {analysis.has_dealbreakers && (
           <div className="bg-destructive/10 border-b border-destructive/20">
-            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-              <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
-              <p className="text-sm text-destructive font-medium">
-                Critère rédhibitoire détecté :{' '}
-                {analysis.dealbreaker_details?.join(', ') ?? 'non spécifié'}.
-                Score global plafonné à 30/100.
-              </p>
+            <div className="container mx-auto px-4 py-4 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm text-destructive font-semibold">
+                  Critère(s) rédhibitoire(s) détecté(s) — score global plafonné à 30%
+                </p>
+                <p className="text-sm text-destructive/80">
+                  {analysis.dealbreaker_details?.join(' · ') ?? 'non spécifié'}. Même si ta personnalité ({analysis.personality_score}%) et tes valeurs ({analysis.values_score}%) matchent, ce(s) point(s) bloquant(s) font chuter le score global.
+                </p>
+              </div>
             </div>
           </div>
         )}

@@ -306,13 +306,19 @@ Chaque phrase doit être directement lisible par le candidat (tutoiement, pas de
     throw new Error('Failed to generate analysis')
   }
 
-  // Apply dealbreaker cap
+  // Recalculate overallScore deterministically from sub-scores so it's always coherent.
+  // Without skills: 50% personality + 50% values.
+  // With skills: 40% personality + 30% values + 30% skills.
   let result = object
+  const computedOverall = result.skillsScore !== null
+    ? Math.round(result.personalityScore * 0.4 + result.valuesScore * 0.3 + result.skillsScore * 0.3)
+    : Math.round(result.personalityScore * 0.5 + result.valuesScore * 0.5)
+
+  result = { ...result, overallScore: computedOverall }
+
+  // Apply dealbreaker cap after score computation.
   if (result.hasDealbreakers && result.overallScore > 30) {
-    result = {
-      ...result,
-      overallScore: 30,
-    }
+    result = { ...result, overallScore: 30 }
   }
 
   return result
