@@ -120,6 +120,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
         // Si le scraping a échoué, on propose automatiquement le mode manuel.
         if (data.code === 'SCRAPE_FAILED') {
           toast.error(data.error)
+          setIsAnalyzing(false)
           setMode('paste')
           return
         }
