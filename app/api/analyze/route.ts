@@ -59,11 +59,12 @@ export async function POST(request: Request) {
     }
 
     // Get user profiles for analysis
-    const [personalityResult, valuesResult, dreamJobResult, situationResult] = await Promise.all([
+    const [personalityResult, valuesResult, dreamJobResult, situationResult, academicResult] = await Promise.all([
       supabase.from('personality_profiles').select('*').eq('user_id', userId).single(),
       supabase.from('values_profiles').select('*').eq('user_id', userId).single(),
       supabase.from('dream_jobs').select('*').eq('user_id', userId).single(),
       supabase.from('current_situations').select('situations, job_search_types').eq('user_id', userId).single(),
+      supabase.from('academic_profiles').select('education_level, graduation_date, diploma_name, school_name, field_of_study').eq('user_id', userId).single(),
     ])
     
     if (!personalityResult.data || !valuesResult.data) {
@@ -113,6 +114,7 @@ export async function POST(request: Request) {
       values: valuesResult.data,
       dreamJob: dreamJobResult.data,
       currentSituation: situationResult.data,
+      academicProfile: academicResult.data ?? null,
     })
     
     // Save analysis to database
