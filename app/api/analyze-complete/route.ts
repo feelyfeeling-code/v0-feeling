@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { analyzeJobMatch } from '@/lib/ai-analysis'
+import { analyzeSkillsOnly } from '@/lib/ai-analysis'
 import type { JobData } from '@/lib/scraper'
 
 export async function POST(request: Request) {
@@ -43,20 +43,16 @@ export async function POST(request: Request) {
       )
     }
 
-    // Fetch all user profiles
-    const [personalityResult, valuesResult, dreamJobResult, situationResult, skillsResult, experiencesResult, academicResult] =
+    // Fetch only what's needed for skills analysis
+    const [skillsResult, experiencesResult, academicResult] =
       await Promise.all([
-        supabase.from('personality_profiles').select('*').eq('user_id', userId).single(),
-        supabase.from('values_profiles').select('*').eq('user_id', userId).single(),
-        supabase.from('dream_jobs').select('*').eq('user_id', userId).single(),
-        supabase.from('current_situations').select('situations, job_search_types').eq('user_id', userId).single(),
         supabase.from('technical_skills').select('*').eq('user_id', userId).single(),
         supabase.from('work_experiences').select('*').eq('user_id', userId).order('start_date', { ascending: false }),
         supabase.from('academic_profiles').select('education_level, graduation_date, diploma_name, school_name, field_of_study').eq('user_id', userId).single(),
       ])
 
-    if (!personalityResult.data || !valuesResult.data) {
-      return NextResponse.json({ error: 'Profil incomplet' }, { status: 400 })
+    if (!skillsResult.data) {
+      return NextResponse.json({ error: 'Profil technique introuvable' }, { status: 400 })
     }
 
     // Reconstruct JobData from stored analysis
@@ -69,38 +65,39 @@ export async function POST(request: Request) {
       remote: existingAnalysis.job_remote ?? '',
     }
 
-    // Run complete analysis with technical profile
-    const analysis = await analyzeJobMatch({
+    // Run skills-only analysis — personality & values scores are kept from the quick analysis
+    const skillsResult2 = await analyzeSkillsOnly({
       jobData,
-      personality: personalityResult.data,
-      values: valuesResult.data,
-      dreamJob: dreamJobResult.data ?? null,
-      currentSituation: situationResult.data ?? null,
-      technicalProfile:
-        skillsResult.data
-          ? {
-              skills: skillsResult.data.skills ?? [],
-              experiences: experiencesResult.data ?? [],
-            }
-          : null,
+      technicalProfile: {
+        skills: skillsResult.data.skills ?? [],
+        experiences: experiencesResult.data ?? [],
+      },
       academicProfile: academicResult.data ?? null,
     })
 
-    // Update the analysis record with skills data
+    // Recalculate overallScore in code using existing personality/values scores
+    const personalityScore = existingAnalysis.personality_score ?? 0
+    const valuesScore = existingAnalysis.values_score ?? 0
+    const skillsScore = skillsResult2.skillsScore
+
+    let overallScore = Math.round(
+      personalityScore * 0.35 +
+      valuesScore      * 0.35 +
+      skillsScore      * 0.30
+    )
+
+    // Re-apply dealbreaker cap if needed
+    if (existingAnalysis.has_dealbreakers && overallScore > 30) {
+      overallScore = 30
+    }
+
+    // Update only skills + recalculated overall (personality/values scores unchanged)
     const { error: updateError } = await supabase
       .from('job_analyses')
       .update({
-        skills_score: analysis.skillsScore,
-        skills_analysis: analysis.skillsAnalysis,
-        overall_score: analysis.overallScore,
-        personality_score: analysis.personalityScore,
-        values_score: analysis.valuesScore,
-        personality_analysis: analysis.personalityAnalysis,
-        values_analysis: analysis.valuesAnalysis,
-        strengths: analysis.strengths,
-        attention_points: analysis.attentionPoints,
-        has_dealbreakers: analysis.hasDealbreakers,
-        dealbreaker_details: analysis.dealbreakerDetails,
+        skills_score: skillsScore,
+        skills_analysis: skillsResult2.skillsAnalysis,
+        overall_score: overallScore,
       })
       .eq('id', analysisId)
 
