@@ -15,6 +15,14 @@ interface TechnicalProfile {
   }>
 }
 
+interface AcademicProfile {
+  education_level: string
+  graduation_date: string
+  diploma_name: string
+  school_name: string
+  field_of_study: string[]
+}
+
 interface UserProfiles {
   jobData: JobData
   personality: {
@@ -41,6 +49,7 @@ interface UserProfiles {
     job_search_types: string[]
   } | null
   technicalProfile?: TechnicalProfile | null
+  academicProfile?: AcademicProfile | null
 }
 
 const TRAIT_LABELS: Record<string, string> = {
@@ -155,7 +164,7 @@ const analysisSchema = z.object({
 export type AnalysisResult = z.infer<typeof analysisSchema>
 
 export async function analyzeJobMatch(profiles: UserProfiles): Promise<AnalysisResult> {
-  const { jobData, personality, values, dreamJob, currentSituation, technicalProfile } = profiles
+  const { jobData, personality, values, dreamJob, currentSituation, technicalProfile, academicProfile } = profiles
   
   const rankedTraits = personality.traits
     .map((t, i) => `${i + 1}. ${TRAIT_LABELS[t] ?? t}`)
@@ -193,17 +202,60 @@ export async function analyzeJobMatch(profiles: UserProfiles): Promise<AnalysisR
         ? integratedTestInfo
         : "Le candidat n'a pas de résultat de test de personnalité."
 
-  const systemPrompt = `Tu es un expert en analyse de compatibilité emploi-candidat pour l'application Feeling.
-Tu analyses les offres d'emploi et évalues leur adéquation avec le profil psychologique et les valeurs d'un candidat.
+  const systemPrompt = `You are an expert job-candidate compatibility analyst for the French app Feeling.
+You analyze job listings and assess their fit with a candidate's psychological profile, values, academic background, and technical skills.
 
-Tu DOIS tutoyer le candidat dans toutes tes réponses.
+IMPORTANT: All output text visible to the candidate MUST be written in French, using "tu" (informal you). This applies to every string in strengths, attentionPoints, personalityAnalysis, valuesAnalysis, and skillsAnalysis.
 
-RÈGLES DE SCORING:
-- Si un critère rédhibitoire du candidat est présent, le score global DOIT être plafonné à 30/100 maximum
-- Les scores doivent être réalistes et différenciés (pas tous à 50%)
-- Utilise toute la plage de 0 à 100
+═══════════════════════════════════════════
+STEP 1 — PRELIMINARY ANALYSIS (internal reasoning only, do not output)
+═══════════════════════════════════════════
+Before scoring, explicitly identify:
+1. The 3 main soft skills expected by the job listing
+2. The 2 dominant cultural values of the company (e.g. performance, collaboration, innovation…)
+3. The key technical skills required
+4. The expected education level and field (if mentioned)
+5. Explicit working conditions (remote policy, hours, pressure, management style)
+Then cross each of these points with the candidate's profile before computing scores.
 
-CRITÈRES RÉDHIBITOIRES POSSIBLES (clés utilisées dans dealbreakerDetails) :
+═══════════════════════════════════════════
+STEP 2 — SCORING RULES
+═══════════════════════════════════════════
+PERSONALITY SCORE (personalityScore):
+- Identify the soft skills expected by the listing
+- Cross them with the candidate's traits using the following weights: rank 1 = 50%, rank 2 = 30%, rank 3 = 20%
+
+VALUES SCORE (valuesScore):
+- Cross the candidate's values with the perceived company culture
+- Apply a significant penalty if the candidate's remote_preference or salary_range is clearly incompatible with the offer
+
+ACADEMIC SCORE — integrated into valuesScore or skillsScore:
+- If the listing requires a higher education level than the candidate's: apply a 10–20 point penalty on skillsScore (or valuesScore if no technical profile)
+- If the candidate's field of study is directly relevant to the role: apply a 5–10 point bonus
+- If the level is sufficient but the field is unrelated: mention in attentionPoints only
+
+OVERALL SCORE (overallScore):
+- With technical profile    : overallScore = personalityScore × 0.35 + valuesScore × 0.35 + skillsScore × 0.30
+- Without technical profile : overallScore = personalityScore × 0.50 + valuesScore × 0.50
+- Round to the nearest integer
+- If a dealbreaker is detected: overall score MUST be capped at 30/100 (applied after calculation)
+
+PARTIAL ANALYSIS — when technical profile is absent:
+- The analysis only covers personality and values dimensions
+- You MUST include a sentence in the global attentionPoints (in French, using "tu") informing the candidate that the analysis is partial and inviting them to complete their technical profile for a more accurate result
+- Example (adapt freely): "Cette analyse ne prend pas encore en compte tes compétences techniques — complète ton profil technique pour obtenir un score plus précis."
+
+GENERAL CONSTRAINTS:
+- Scores must be realistic and differentiated (not all around 50%)
+- Use the full 0–100 range
+- A score below 40 is valid and should be given when the profile does not match
+
+═══════════════════════════════════════════
+STEP 3 — DEALBREAKER DETECTION
+═══════════════════════════════════════════
+A dealbreaker is "present" ONLY if it is both selected by the candidate AND actually observed in the listing (including the end of the description).
+
+POSSIBLE DEALBREAKERS (keys for dealbreakerDetails):
 - management_autoritaire : Un management trop autoritaire
 - pas_evolution : Pas de perspectives d'évolution
 - mauvaise_ambiance : Une mauvaise ambiance d'équipe
@@ -215,85 +267,96 @@ CRITÈRES RÉDHIBITOIRES POSSIBLES (clés utilisées dans dealbreakerDetails) :
 - pas_flexibilite : Aucune flexibilité des horaires
 - heures_sup : Des heures supplémentaires fréquentes
 
-Un critère rédhibitoire est "présent" uniquement s'il fait partie des critères sélectionnés par le candidat ET s'il est effectivement constaté dans l'offre analysée.
+CANDIDATE'S DOMINANT PERSONALITY TRAITS:
+${rankedTraits || '(none selected)'}
 
-ANALYSE DE PERSONNALITÉ:
-Le candidat a choisi 3 traits dominants, classés par ordre d'importance :
-${rankedTraits || '(aucun trait sélectionné)'}
+${existingTestInfo}`
 
-${existingTestInfo}
+  // Fix troncature : garder début + fin pour ne pas rater les conditions de travail et mentions de management
+  const desc = jobData.description
+  const jobDescription = desc.length > 4000
+    ? desc.slice(0, 2000) + '\n\n[...]\n\n' + desc.slice(-2000)
+    : desc
 
-Pour calculer le score de personnalité, identifie les soft skills attendus dans l'offre et croise-les avec les traits du candidat en respectant la pondération indiquée (rang 1 = 50%, rang 2 = 30%, rang 3 = 20%).`
-
-  const userPrompt = `OFFRE D'EMPLOI:
-Titre: ${jobData.title}
-Entreprise: ${jobData.company}
-Lieu: ${jobData.location}
-Type de contrat: ${jobData.type}
-Télétravail: ${jobData.remote}
+  const userPrompt = `JOB LISTING:
+Title: ${jobData.title}
+Company: ${jobData.company}
+Location: ${jobData.location}
+Contract type: ${jobData.type}
+Remote policy: ${jobData.remote}
 
 Description:
-${jobData.description.slice(0, 4000)}
+${jobDescription}
 
 ---
 
-PROFIL DU CANDIDAT:
+CANDIDATE PROFILE:
 
-Situation(s) actuelle(s): ${formatSituations(currentSituation)}
+Current situation(s): ${formatSituations(currentSituation)}
 
-Traits de personnalité dominants (classés par importance) :
-${rankedTraits || '(non renseignés)'}
+Dominant personality traits (ranked by importance):
+${rankedTraits || '(none provided)'}
 ${existingTestInfo}
 
-Valeurs professionnelles les plus importantes (jusqu'à 3) :
+Top professional values (up to 3):
 ${
   values.selected_values.length > 0
     ? values.selected_values.map((v) => `- ${VALUE_LABELS[v] ?? v}`).join('\n')
-    : '(aucune valeur sélectionnée)'
+    : '(none selected)'
 }
 
-Critères rédhibitoires du candidat (jusqu'à 3) :
+Candidate's dealbreakers (up to 3):
 ${
   values.dealbreakers.length > 0
     ? values.dealbreakers.map((d) => `- ${DEALBREAKER_LABELS[d] ?? d}`).join('\n')
-    : '(aucun critère rédhibitoire)'
+    : '(none)'
 }
 
-${dreamJob ? `Job de rêve :
-- Poste(s) visé(s) : ${dreamJob.job_titles.length > 0 ? dreamJob.job_titles.join(', ') : '(non renseigné)'}
-- Localisation(s) souhaitée(s) : ${dreamJob.locations.length > 0 ? dreamJob.locations.join(', ') : '(non renseignée)'}
-- Rayon de recherche : ${dreamJob.location_radius === 0 ? 'Indifférent' : `${dreamJob.location_radius} km`}
-- Secteurs d'activité : ${dreamJob.industries.length > 0 ? dreamJob.industries.join(', ') : '(non renseignés)'}
-- Tranche de salaire souhaitée : ${dreamJob.salary_range ?? '(non renseignée)'}
-- Préférence télétravail : ${dreamJob.remote_preference ?? '(non renseignée)'}` : ''}
+${academicProfile ? `Academic background:
+- Education level: ${academicProfile.education_level.toUpperCase()}
+- Degree: ${academicProfile.diploma_name}
+- School / Institution: ${academicProfile.school_name}
+- Field(s) of study: ${academicProfile.field_of_study.length > 0 ? academicProfile.field_of_study.join(', ') : '(not provided)'}
+- Graduation year: ${academicProfile.graduation_date}` : 'Academic background: not provided (do not evaluate education level)'}
 
-${technicalProfile ? `Profil technique:
-Compétences: ${technicalProfile.skills.join(', ')}
+${dreamJob ? `Job search criteria:
+- Target role(s): ${dreamJob.job_titles.length > 0 ? dreamJob.job_titles.join(', ') : '(not provided)'}
+- Preferred location(s): ${dreamJob.locations.length > 0 ? dreamJob.locations.join(', ') : '(not provided)'}
+- Search radius: ${dreamJob.location_radius === 0 ? 'No preference' : `${dreamJob.location_radius} km`}
+- Target industries: ${dreamJob.industries.length > 0 ? dreamJob.industries.join(', ') : '(not provided)'}
+- Expected salary range: ${dreamJob.salary_range ?? '(not provided)'}
+- Remote preference: ${dreamJob.remote_preference ?? '(not provided)'}
+⚠️ If the listing's remote policy or salary is clearly incompatible with the candidate's preferences, apply a significant penalty on valuesScore and mention it in valuesAnalysis.attentionPoints (in French).` : ''}
 
-Expériences professionnelles:
-${technicalProfile.experiences.map(e => `- ${e.job_title} chez ${e.company_name} (${e.start_date} - ${e.is_current ? "présent" : e.end_date ?? ""})${e.main_tasks ? `: ${e.main_tasks}` : ""}`).join('\n')}` : 'Profil technique: non renseigné (ne pas évaluer les compétences, retourner skillsScore à null)'}
+${technicalProfile ? `Technical profile:
+Skills: ${technicalProfile.skills.join(', ')}
+
+Work experiences:
+${technicalProfile.experiences.map(e => `- ${e.job_title} at ${e.company_name} (${e.start_date} – ${e.is_current ? 'present' : e.end_date ?? ''})${e.main_tasks ? `: ${e.main_tasks}` : ''}`).join('\n')}` : 'Technical profile: not provided (do not evaluate technical skills — return skillsScore as null and skillsAnalysis as null)'}
 
 ---
 
-Analyse cette offre par rapport au profil du candidat.
-Fournis des insights personnalisés et actionnables.
-Prends en compte la/les situation(s) actuelle(s) du candidat (il peut en cumuler plusieurs, par exemple "En poste" ET "En recherche d'emploi (CDI)", ou "En études" ET "En recherche d'emploi (Alternance)") pour adapter tes recommandations.
-Vérifie si les critères rédhibitoires sont présents dans l'offre.
-${technicalProfile ? 'Évalue également la compatibilité des compétences techniques avec les exigences du poste.' : 'Ne pas évaluer les compétences techniques (skillsScore = null, skillsAnalysis = null).'}
-Sois honnête et nuancé dans ton analyse.
+Analyze this job listing against the candidate's profile.
+Provide personalized, actionable insights.
+Account for the candidate's current situation(s) — they may combine several (e.g. "employed" AND "seeking a CDI") — and tailor recommendations accordingly.
+Check for dealbreakers throughout the entire description, including the end.
+${technicalProfile
+  ? 'Evaluate both technical skill fit AND academic background against the job requirements.'
+  : 'Do not evaluate technical skills (skillsScore = null, skillsAnalysis = null). Factor in academic background within valuesScore where relevant. You MUST include a sentence in global attentionPoints (in French) telling the candidate the analysis is partial and inviting them to complete their technical profile.'}
+Be honest and nuanced. A low score is better than a flattering but inaccurate one.
 
-CONTRAINTES STRICTES SUR LE FORMAT DES RÉPONSES (NE PAS IGNORER) :
-- personalityAnalysis.strengths : exactement 2 à 3 phrases concrètes basées sur les 3 traits dominants du candidat et les soft skills attendus par l'offre. Tutoiement.
-- personalityAnalysis.attentionPoints : exactement 1 à 2 phrases sur les risques/frictions liés au profil psychologique face à l'offre.
-- valuesAnalysis.strengths : exactement 2 à 3 phrases concrètes croisant les valeurs du candidat avec la culture/organisation perçue de l'entreprise.
-- valuesAnalysis.attentionPoints : exactement 1 à 2 phrases sur les écarts entre les valeurs du candidat et ce que propose l'entreprise.
-- skillsAnalysis.strengths (si technicalProfile fourni) : 2 à 3 phrases concrètes citant au moins UNE compétence ou expérience précise du candidat face à une exigence précise de l'offre.
-- skillsAnalysis.attentionPoints (si technicalProfile fourni) : 1 à 2 phrases mentionnant au moins UNE compétence attendue par l'offre et absente/faible chez le candidat.
-- strengths (liste globale) : exactement 2 à 3 phrases courtes qui expliquent la raison principale du match global (ou du mismatch).
-  > OBLIGATOIRE : chaque phrase doit mentionner au moins UN élément spécifique du profil candidat (trait, valeur, expérience, compétence, etc.) ET au moins UN élément spécifique de l'offre (mission, tech, secteur, contrat, etc.). Pas de texte générique type "ton profil correspond bien".
-  > Si le score global est < 40 ("Faible adéquation") : les phrases doivent nommer EXPLICITEMENT la/les dimensions qui pénalisent (ex: "tes compétences en X manquent"), rester bienveillantes (pas décourageantes), et proposer UNE action concrète (ex: "une formation en Y pourrait renforcer ton profil").
-- attentionPoints (liste globale) : 1 à 3 phrases sur les points à surveiller au niveau global.
-Chaque phrase doit être directement lisible par le candidat (tutoiement, pas de jargon, pas de paraphrase de l'offre).`
+STRICT OUTPUT FORMAT CONSTRAINTS (DO NOT IGNORE):
+- All output strings must be written in French using "tu" (informal).
+- personalityAnalysis.strengths: exactly 2–3 sentences grounded in the candidate's dominant traits AND the soft skills identified in the listing.
+- personalityAnalysis.attentionPoints: exactly 1–2 sentences on psychological friction points between the candidate's profile and the role's demands.
+- valuesAnalysis.strengths: exactly 2–3 sentences crossing the candidate's values with the perceived company culture. If academic background is relevant (aligned field, recognized school in the sector), mention it here.
+- valuesAnalysis.attentionPoints: exactly 1–2 sentences on mismatches (values, remote, salary, or academic level if insufficient).
+- skillsAnalysis.strengths (if technical profile provided): 2–3 sentences citing at least ONE specific skill or experience from the candidate matched against ONE specific requirement from the listing.
+- skillsAnalysis.attentionPoints (if technical profile provided): 1–2 sentences naming at least ONE expected skill that is absent or weak, or an academic gap if the listing requires it.
+- strengths (global list): exactly 2–3 short sentences.
+  > MANDATORY: each sentence must reference at least ONE specific element from the candidate profile (trait, value, degree, experience, skill) AND at least ONE specific element from the listing (mission, sector, tech, contract type). No generic statements.
+  > If overall score < 40: explicitly name the dimension(s) causing the low score, remain encouraging, and suggest ONE concrete action.
+- attentionPoints (global list): 1–3 sentences on global watch points. No jargon, no paraphrasing the listing.`
 
   const { object } = await generateObject({
     model: anthropic('claude-sonnet-4-20250514'),

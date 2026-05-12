@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     }
 
     // Fetch all user profiles
-    const [personalityResult, valuesResult, dreamJobResult, situationResult, skillsResult, experiencesResult] =
+    const [personalityResult, valuesResult, dreamJobResult, situationResult, skillsResult, experiencesResult, academicResult] =
       await Promise.all([
         supabase.from('personality_profiles').select('*').eq('user_id', userId).single(),
         supabase.from('values_profiles').select('*').eq('user_id', userId).single(),
@@ -52,6 +52,7 @@ export async function POST(request: Request) {
         supabase.from('current_situations').select('situations, job_search_types').eq('user_id', userId).single(),
         supabase.from('technical_skills').select('*').eq('user_id', userId).single(),
         supabase.from('work_experiences').select('*').eq('user_id', userId).order('start_date', { ascending: false }),
+        supabase.from('academic_profiles').select('education_level, graduation_date, diploma_name, school_name, field_of_study').eq('user_id', userId).single(),
       ])
 
     if (!personalityResult.data || !valuesResult.data) {
@@ -82,6 +83,7 @@ export async function POST(request: Request) {
               experiences: experiencesResult.data ?? [],
             }
           : null,
+      academicProfile: academicResult.data ?? null,
     })
 
     // Update the analysis record with skills data
