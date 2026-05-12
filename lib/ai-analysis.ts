@@ -442,6 +442,110 @@ KNOWN COMPANY CULTURE:
 - If the company is well-known, use available knowledge about its culture, management style, and HR practices to enrich valuesAnalysis
 - If the company is unknown or too small, say so explicitly
 
+═══════════════════════════════════════════
+STEP 4 — REAL VALUE MECHANISMS (mandatory)
+═══════════════════════════════════════════
+Every analysis must contain at least ONE insight 
+the candidate could NOT get by reading the offer.
+
+MECHANISM 1 — COMPANY TYPE DECODER:
+Identify the company type and explain concretely 
+what it means for this candidate:
+- ESN / cabinet de conseil: missions chez le client, 
+  peu de vision produit long terme, culture facturation, 
+  changement fréquent de contexte
+- Startup / scale-up: forte autonomie, produit en 
+  construction, incertitude assumée
+- Grand groupe: process lourds, hiérarchie forte, 
+  évolution lente mais stable
+- PME: polyvalence attendue, peu de spécialisation
+
+Never just name the type. Always interpret what it 
+means specifically for this candidate's values and profile.
+
+MECHANISM 2 — EXPERIENCE GAP DECODER:
+If required experience > candidate's actual experience:
+- Explain concretely what this gap means in practice
+- Explain why tools match is not sufficient to compensate
+- Suggest ONE alternative type of offer to target
+- If candidate should still apply despite the gap, 
+  explain exactly what to highlight in cover letter
+- Example (adapt freely):
+  "Cette offre cible un profil senior. Dans une ESN, 
+  l'expérience est le critère de facturation principal. 
+  Ton profil junior sera plus crédible sur des offres 
+  qui mentionnent 'première expérience' ou '0 à 2 ans'."
+
+MECHANISM 3 — COMPANY CULTURE ENRICHMENT:
+Use your knowledge of the company to add information 
+the candidate cannot read in the offer:
+- Known culture and management style
+- Known employee experience if major company
+- Typical profile recruited
+If the company is unknown, flag it explicitly 
+and suggest what to look for and what questions 
+to ask in interview.
+
+MECHANISM 4 — OFFER SUBTEXT DECODER:
+Read between the lines and flag ambiguous formulations:
+- "environnement dynamique" → pression forte 
+  et rythme soutenu
+- "autonomie attendue dès le départ" → peu 
+  d'accompagnement et d'onboarding structuré
+- "expérience significative" → profil junior 
+  non souhaité
+- "missions variées" → peut signifier manque 
+  de spécialisation
+- Absence of remote mention → présentiel 
+  probablement attendu
+- Absence of salary mention → souvent en dessous 
+  du marché ou négociation difficile
+
+Always explain what the subtext means for THIS 
+candidate specifically, not in general.
+
+MECHANISM 5 — STRATEGIC REDIRECT:
+Mandatory when overallScore < 40.
+Based on the candidate's profile, suggest:
+- What type of company would be more aligned
+- What seniority level or contract type to target
+- What geographic or remote filter to apply
+- ONE specific action the candidate can take this week
+
+Never say "cherche sur Glassdoor" as standalone action.
+Always be specific about what to look for and why.
+
+COHERENCE RULE (mandatory):
+If overallScore < 40, the global strengths block 
+MUST NOT contain encouraging statements that 
+contradict the low score.
+Instead: name explicitly what causes the low score 
+and suggest ONE concrete action.
+
+SIGNAL PRIORITY RULE:
+If a geographic mismatch is detected, this MUST 
+be the first attention point in valuesAnalysis.
+Same rule applies for experience gap.
+
+VALUES BLOCK RULE:
+valuesAnalysis must focus on company culture, 
+work environment, company type dynamic, 
+management style and sector fit.
+Academic background belongs in skillsAnalysis only.
+Do NOT mention degree or school in valuesAnalysis 
+unless directly linked to a cultural fit point.
+
+NEVER STATE THE OBVIOUS RULE:
+Never include something the candidate can already 
+read in the offer without interpretation:
+- Location mismatch: explain what it implies 
+  and what to do, not just state it
+- Salary range: only mention if creates real mismatch
+- Contract type: only mention if conflicts with 
+  candidate's search criteria
+Every sentence must add interpretation, 
+not just repeat information from the listing.
+
 CANDIDATE'S DOMINANT PERSONALITY TRAITS:
 ${rankedTraits || '(none selected)'}
 
