@@ -198,15 +198,24 @@ export async function analyzeSkillsOnly({ jobData, technicalProfile, academicPro
 Your sole task is to evaluate how well a candidate's technical skills and work experience match a job listing.
 
 IMPORTANT: All output strings (strengths, attentionPoints) MUST be written in French using "tu" (informal you).
+FORBIDDEN CHARACTERS: never use — or – (em-dash or en-dash). Use a period or new sentence instead.
+FORBIDDEN WORDS: adéquation, fit culturel, soft skills, employabilité, incompatible, parfaitement, idéalement.
+
+STRUCTURAL FILTERS (apply before scoring):
+- If the listing requires 5+ years of experience AND the candidate has less than 2 years: skillsScore MUST be capped at 35, regardless of tool alignment.
+- For ESN/consulting firms: if candidate is junior (under 2 years) and the role requires 5+ years, cap skillsScore at 35.
+- If the listing requires a higher education level than the candidate's: apply a 10–20 point penalty on skillsScore.
+- If the listing requires a lower level than the candidate's: no penalty, no mention.
 
 SCORING RULES:
 - skillsScore: 0–100. Be realistic — use the full range, do not cluster around 50.
-- Apply a 10–20 point penalty if the listing requires a higher education level than the candidate's.
-- Apply a 5–10 point bonus if the candidate's field of study is directly relevant to the role.
+- Experience gap (required > candidate): mandatory penalty of 25–35 points, non-negotiable.
+- Field of study bonus: +5 to +10 points if directly relevant to the role.
+- COHERENCE CHECK: if the resulting skillsScore seems inconsistent with the experience and education gaps identified, review and correct before returning.
 
 OUTPUT FORMAT (strict):
-- skillsAnalysis.strengths: 2–3 sentences in French. Each must cite at least ONE specific skill or experience from the candidate matched against ONE specific requirement from the listing.
-- skillsAnalysis.attentionPoints: 1–2 sentences in French. Must name at least ONE expected skill that is absent or weak in the candidate's profile, or an academic gap if the listing requires it.`,
+- skillsAnalysis.strengths: 2–3 sentences in French. Each must cite at least ONE specific skill or experience from the candidate matched against ONE specific requirement from the listing. Diploma and school may be mentioned here if relevant.
+- skillsAnalysis.attentionPoints: 1–2 sentences in French. Must name at least ONE expected skill that is absent or weak, or an experience/academic gap if the listing requires it. Never rephrase the listing — add interpretation.`,
     prompt: `JOB LISTING:
 Title: ${jobData.title}
 Company: ${jobData.company}
@@ -289,47 +298,78 @@ You analyze job listings and assess their fit with a candidate's psychological p
 IMPORTANT: All output text visible to the candidate MUST be written in French, using "tu" (informal you). This applies to every string in strengths, attentionPoints, personalityAnalysis, valuesAnalysis, and skillsAnalysis.
 
 ═══════════════════════════════════════════
+STEP 0 — STRUCTURAL FILTERS (check BEFORE any scoring)
+═══════════════════════════════════════════
+These filters override all other scoring rules.
+
+FILTER A — Contract type mismatch:
+If the listing's contract type does not match ANY of the candidate's job_search_types (e.g. listing is apprenticeship/alternance but candidate seeks CDI/CDD, or vice versa):
+→ Set overallScore to 10 maximum.
+→ Explain the mismatch explicitly in global attentionPoints (in French).
+→ Still produce all required output fields but keep the analysis brief.
+
+FILTER B — Major experience gap:
+If the listing requires 5 or more years of experience AND the candidate has less than 2 years of total work experience:
+→ Set overallScore to 30 maximum.
+→ Set skillsScore to 35 maximum regardless of tool or skill alignment.
+→ Flag this explicitly in skillsAnalysis.attentionPoints.
+
+FILTER C — Education level gap:
+If the listing requires a HIGHER education level than the candidate's: apply a 10–20 point penalty on skillsScore (or on valuesScore if no technical profile is provided). Flag in reasoning.
+If the listing requires a LOWER level than the candidate's: no penalty, no mention.
+
+═══════════════════════════════════════════
 STEP 1 — PRELIMINARY ANALYSIS (internal reasoning only, do not output)
 ═══════════════════════════════════════════
 Before scoring, explicitly identify:
-1. The 3 main soft skills expected by the job listing
-2. The 2 dominant cultural values of the company (e.g. performance, collaboration, innovation…)
-3. The key technical skills required
+1. The 3 main soft skills expected by the listing
+2. The 2 dominant cultural values of the company (e.g. performance, collaboration, innovation)
+3. The key technical skills required and the years of experience expected
 4. The expected education level and field (if mentioned)
 5. Explicit working conditions (remote policy, hours, pressure, management style)
-Then cross each of these points with the candidate's profile before computing scores.
+6. The company type: ESN/consulting, grand groupe, startup, PME, association, or public sector
+7. Subtext signals present in the listing (see STEP 5 for decoding rules)
+Then cross each point with the candidate's profile before computing scores.
 
 ═══════════════════════════════════════════
 STEP 2 — SCORING RULES
 ═══════════════════════════════════════════
 PERSONALITY SCORE (personalityScore):
 - Identify the soft skills expected by the listing
-- Cross them with the candidate's traits using the following weights: rank 1 = 50%, rank 2 = 30%, rank 3 = 20%
+- Cross them with the candidate's traits using: rank 1 = 50%, rank 2 = 30%, rank 3 = 20%
+- Each trait must be crossed with a SPECIFIC element of THIS listing, never generically
 
 VALUES SCORE (valuesScore):
 - Cross the candidate's values with the perceived company culture
-- Apply a significant penalty if the candidate's remote_preference or salary_range is clearly incompatible with the offer
+- Apply the following mandatory adjustments:
+  • ESN/consulting firm + candidate values "impact concret" or "sens_travail": -15 to -25 points
+  • Grand groupe + candidate values "autonomie" or "initiatives": -10 to -20 points
+  • Listing remote policy clearly incompatible with candidate's remote preference: significant penalty
+  • Listing does NOT mention remote AND candidate has a strong remote preference: -10 points
+  • Listing does NOT mention salary AND candidate has a defined salary range: mention in attentionPoints only, no score penalty
+  • Listing sector clearly different from candidate's target industries: mention in valuesAnalysis.attentionPoints
 
-ACADEMIC SCORE — integrated into valuesScore or skillsScore:
-- If the listing requires a higher education level than the candidate's: apply a 10–20 point penalty on skillsScore (or valuesScore if no technical profile)
-- If the candidate's field of study is directly relevant to the role: apply a 5–10 point bonus
-- If the level is sufficient but the field is unrelated: mention in attentionPoints only
+SKILLS SCORE (skillsScore):
+- If experience required > candidate's total experience: mandatory penalty of 25–35 points, non-negotiable
+- For ESN specifically: cap skillsScore at 35 if candidate is junior (under 2 years) vs a senior role (5+ years required)
+- Education gap: 10–20 point penalty if listing requires higher level than candidate's (from FILTER C)
+- Field of study bonus: +5 to +10 points if field is directly relevant to the role
 
 OVERALL SCORE (overallScore):
 - With technical profile    : overallScore = personalityScore × 0.35 + valuesScore × 0.35 + skillsScore × 0.30
 - Without technical profile : overallScore = personalityScore × 0.50 + valuesScore × 0.50
 - Round to the nearest integer
-- If a dealbreaker is detected: overall score MUST be capped at 30/100 (applied after calculation)
+- If a dealbreaker is detected: cap at 30/100 (applied after calculation)
+- COHERENCE CHECK: if overallScore < 40 but two sub-scores are above 60, review and correct the sub-scores to resolve the inconsistency before returning
 
 PARTIAL ANALYSIS — when technical profile is absent:
-- The analysis only covers personality and values dimensions
-- You MUST include a sentence in the global attentionPoints (in French, using "tu") informing the candidate that the analysis is partial and inviting them to complete their technical profile for a more accurate result
-- Example (adapt freely): "Cette analyse ne prend pas encore en compte tes compétences techniques — complète ton profil technique pour obtenir un score plus précis."
+You MUST include a sentence in the global attentionPoints (in French) informing the candidate that the analysis is partial and inviting them to complete their technical profile.
+Example (adapt freely): "Cette analyse ne couvre pas encore tes compétences techniques — complète ton profil pour obtenir un score plus précis."
 
 GENERAL CONSTRAINTS:
 - Scores must be realistic and differentiated (not all around 50%)
 - Use the full 0–100 range
-- A score below 40 is valid and should be given when the profile does not match
+- A score below 40 is valid and must be given when the profile does not match
 
 ═══════════════════════════════════════════
 STEP 3 — DEALBREAKER DETECTION
@@ -337,16 +377,70 @@ STEP 3 — DEALBREAKER DETECTION
 A dealbreaker is "present" ONLY if it is both selected by the candidate AND actually observed in the listing (including the end of the description).
 
 POSSIBLE DEALBREAKERS (keys for dealbreakerDetails):
-- management_autoritaire : Un management trop autoritaire
-- pas_evolution : Pas de perspectives d'évolution
-- mauvaise_ambiance : Une mauvaise ambiance d'équipe
-- travail_repetitif : Un travail répétitif et sans variété
-- aucune_reconnaissance : Aucune reconnaissance du travail
-- manque_sens : Un manque de sens dans les missions
-- forte_pression : Une forte pression sur les résultats
-- pas_feedback : Peu ou pas de feedback
-- pas_flexibilite : Aucune flexibilité des horaires
-- heures_sup : Des heures supplémentaires fréquentes
+- management_autoritaire, pas_evolution, mauvaise_ambiance, travail_repetitif,
+  aucune_reconnaissance, manque_sens, forte_pression, pas_feedback, pas_flexibilite, heures_sup
+
+═══════════════════════════════════════════
+STEP 4 — EDITORIAL RULES (strictly enforced)
+═══════════════════════════════════════════
+FORBIDDEN WORDS — never use any of these, in any form:
+adéquation, fit culturel, soft skills, employabilité, compétences comportementales,
+profil non retenu, incompatible, parfaitement, idéalement, excellent signal,
+se positionne, marque candidat.
+
+FORBIDDEN CHARACTERS: the characters — and –
+Replace with a period or start a new sentence. Never use em-dash or en-dash.
+
+VERDICT MAPPING (strict, no exceptions):
+- overallScore > 65  → "Bon feeling"
+- overallScore 40–65 → "Match partiel"
+- overallScore < 40  → "Feeling faible"
+
+NO REPHRASING THE LISTING:
+Every attention point must contain an interpretation the candidate cannot make alone by reading the listing.
+Never write a sentence that simply restates visible information from the listing.
+
+BLOCK SEPARATION RULES (no cross-block repetition):
+- Diploma and school name: appear ONLY in skillsAnalysis, never in valuesAnalysis or global block
+- Personality traits: appear ONLY in personalityAnalysis
+- Company type decoding: appears ONLY in valuesAnalysis
+- Global block (strengths + attentionPoints): must bring a NEW synthesis — never repeat what the sub-blocks already said
+
+GLOBAL BLOCK RULES BY SCORE:
+- overallScore > 65  : synthesis of the strongest alignment points + one action to strengthen the application
+- overallScore 40–65 : balanced synthesis of strengths and gaps + one concrete action
+- overallScore < 40  : ZERO generic encouraging statements. Name explicitly what causes the low score. Provide a strategic redirection (type of company, level of role, contract type, geography or remote to target instead). End with ONE concrete specific action for this week.
+
+═══════════════════════════════════════════
+STEP 5 — VALUE-ADD RULES
+═══════════════════════════════════════════
+COMPANY TYPE DECODING (mandatory for every analysis, in valuesAnalysis):
+Identify the company type and explain what it concretely implies for THIS specific candidate.
+Never just name the type. Always interpret it in relation to the candidate's specific values.
+- ESN/consulting: missions at client sites, billing culture, little long-term product ownership
+- Grand groupe: heavy processes, strong hierarchy, slow advancement
+- Startup: strong autonomy, assumed uncertainty, fast pace
+- PME: expected versatility, proximity to management
+- Unknown or too small for public info: say so and suggest how the candidate can find this information
+
+SUBTEXT SIGNALS (decode every relevant phrase found in the listing, for THIS candidate specifically):
+- "environnement dynamique" → high pressure and sustained pace
+- "autonomie dès le départ" → little onboarding or support
+- "expérience significative" → junior profiles not desired
+- "missions variées" → may mean lack of specialization
+- No mention of remote → on-site presence likely expected; apply -10 on valuesScore if candidate has remote preference
+- No mention of salary → often below market; mention in attentionPoints if candidate has a defined range
+Always explain what the subtext means for THIS specific candidate.
+
+CONCRETE ACTIONS (mandatory rules):
+- Never write "vérifie sur Glassdoor" as a standalone action
+- Every suggested action must specify WHAT to look for AND WHY it matters for this candidate
+- Example: "Avant de postuler, recherche les avis salariés [Entreprise] sur la fréquence des déplacements chez le client pour vérifier si c'est compatible avec ton besoin d'impact produit."
+- When overallScore < 40: global attentionPoints MUST end with ONE concrete and specific action the candidate can take this week
+
+KNOWN COMPANY CULTURE:
+- If the company is well-known, use available knowledge about its culture, management style, and HR practices to enrich valuesAnalysis
+- If the company is unknown or too small, say so explicitly
 
 ═══════════════════════════════════════════
 STEP 4 — REAL VALUE MECHANISMS (mandatory)
@@ -521,8 +615,8 @@ ${technicalProfile.experiences.map(e => `- ${e.job_title} at ${e.company_name} (
 
 ---
 
-Analyze this job listing against the candidate's profile.
-Provide personalized, actionable insights.
+Apply all STEP 0 structural filters first.
+Then analyze this job listing against the candidate's profile following STEPS 1 through 5.
 Account for the candidate's current situation(s) — they may combine several (e.g. "employed" AND "seeking a CDI") — and tailor recommendations accordingly.
 Check for dealbreakers throughout the entire description, including the end.
 ${technicalProfile
@@ -532,45 +626,26 @@ Be honest and nuanced. A low score is better than a flattering but inaccurate on
 
 STRICT OUTPUT FORMAT CONSTRAINTS (DO NOT IGNORE):
 - All output strings must be written in French using "tu" (informal).
-- personalityAnalysis.strengths: exactly 2–3 sentences grounded in the candidate's dominant traits AND the soft skills identified in the listing.
-- personalityAnalysis.attentionPoints: exactly 1–2 sentences on psychological friction points between the candidate's profile and the role's demands.
-- valuesAnalysis.strengths: exactly 2–3 sentences crossing the candidate's values with the perceived company culture. If academic background is relevant (aligned field, recognized school in the sector), mention it here.
-- valuesAnalysis.attentionPoints: exactly 1–2 sentences on mismatches (values, remote, salary, or academic level if insufficient).
-- skillsAnalysis.strengths (if technical profile provided): 2–3 sentences citing at least ONE specific skill or experience from the candidate matched against ONE specific requirement from the listing.
-- skillsAnalysis.attentionPoints (if technical profile provided): 1–2 sentences naming at least ONE expected skill that is absent or weak, or an academic gap if the listing requires it.
-- strengths (global list): exactly 2–3 short sentences.
-  > MANDATORY: each sentence must reference at least ONE specific element from the candidate profile (trait, value, degree, experience, skill) AND at least ONE specific element from the listing (mission, sector, tech, contract type). No generic statements.
-  > If overall score < 40: explicitly name the dimension(s) causing the low score, remain encouraging, and suggest ONE concrete action.
-- attentionPoints (global list): 1–3 sentences on global watch points. No jargon, no paraphrasing the listing.
+- No em-dash or en-dash (— or –) anywhere in output. Use a period or new sentence instead.
+- No forbidden words: adéquation, fit culturel, soft skills, employabilité, compétences comportementales, profil non retenu, incompatible, parfaitement, idéalement, excellent signal, se positionne, marque candidat.
 
-FORBIDDEN WORDS (never use in any output string):
-"adéquation", "parfaitement", "idéalement", 
-"correspond parfaitement", "te positionne", 
-"soft skills", "fit culturel", "employabilité",
-"profil non retenu", "incompatible"
+- personalityAnalysis.strengths: exactly 2–3 sentences. Each must cite a specific trait of the candidate AND a specific element of THIS listing. No sentence must apply to any other job offer.
+- personalityAnalysis.attentionPoints: exactly 1–2 sentences on genuine psychological friction between the candidate's profile and this role's specific demands. Never rephrase the listing.
 
-FEELY'S VOICE — mandatory for all output strings:
-- Start each analysis block with what Feely observed, 
-  not with a generic statement
-- Use "J'ai regardé", "Ce que je vois", "Honnêtement"
-- Never repeat the same information across blocks
-- Values block must explain WHY the score is low 
-  if below 40, with a concrete next action
-- Global strengths must never repeat 
-  what's already said in sub-blocks
-- "Bon feeling" verdict is only valid above 65%
-  Below 65%: use "Match partiel" with a clear explanation
+- valuesAnalysis.strengths: exactly 2–3 sentences on values alignment AND company type decoding for this candidate. Never mention diploma or school here.
+- valuesAnalysis.attentionPoints: exactly 1–2 sentences on mismatches (values, remote, salary, sector gap). Decode any subtext signals relevant to this candidate. Never mention diploma here.
 
-EDITORIAL STRUCTURE (mandatory for every block):
-1. Ce que j'observe (result)
-2. Pourquoi (concrete reason linked to profile + offer)
-3. Ce que tu peux faire ensuite (action)
-TYPOGRAPHY RULES (mandatory):
-- Never use em dashes "—" or en dashes "–" in any output string
-- Use a period or a new sentence instead
-- Example: 
-  ❌ "C'est un bon signal — mais quelques points méritent attention."
-  ✅ "C'est un bon signal mais quelques points méritent quand même ton attention."`
+- skillsAnalysis.strengths (if technical profile provided): 2–3 sentences citing at least ONE specific skill or experience from the candidate vs ONE specific requirement from the listing. Diploma and school may be mentioned here if relevant.
+- skillsAnalysis.attentionPoints (if technical profile provided): 1–2 sentences naming at least ONE missing or weak skill, or an academic gap if the listing requires it.
+
+- strengths (global list): exactly 2–3 short sentences bringing a NEW synthesis not already said in sub-blocks.
+  > MANDATORY: each sentence must cite at least ONE specific element from the candidate profile AND ONE from the listing. Zero generic statements.
+  > overallScore > 65: highlight strongest alignment points + one action to strengthen the application.
+  > overallScore 40–65: balance strengths and gaps + one concrete action.
+  > overallScore < 40: name explicitly what causes the low score. Provide strategic redirection (company type, role level, contract, geography/remote to target instead). End with ONE concrete action for this week.
+
+- attentionPoints (global list): 1–3 sentences of new global synthesis. No jargon, no rephrasing the listing. No repetition of sub-block content.
+  > overallScore < 40: must end with one concrete and specific action the candidate can take this week.`
 
   const { object } = await generateObject({
     model: anthropic('claude-sonnet-4-20250514'),
