@@ -232,10 +232,17 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
       <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <FeelingLogo size="md" />
-          
-          <Button variant="outline" onClick={handleSignOut}>
-            Déconnexion
-          </Button>
+
+          <div className="flex items-center gap-2">
+            <Link href="/profil">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+                Mon profil
+              </Button>
+            </Link>
+            <Button variant="outline" onClick={handleSignOut}>
+              Déconnexion
+            </Button>
+          </div>
         </div>
       </header>
 
