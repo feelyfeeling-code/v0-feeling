@@ -163,6 +163,87 @@ const analysisSchema = z.object({
 
 export type AnalysisResult = z.infer<typeof analysisSchema>
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Skills-only analysis — used by /api/analyze-complete to avoid re-running
+// the full Claude analysis. Only evaluates technical skills and returns
+// skillsScore + skillsAnalysis. overallScore is then recalculated in code.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const skillsOnlySchema = z.object({
+  skillsScore: z.number().min(0).max(100).describe('Technical skills compatibility score'),
+  skillsAnalysis: z.object({
+    strengths: z.array(z.string()).describe('Points forts compétences (en français, tutoiement)'),
+    attentionPoints: z.array(z.string()).describe("Points d'attention compétences (en français, tutoiement)"),
+  }),
+})
+
+export type SkillsOnlyResult = z.infer<typeof skillsOnlySchema>
+
+interface SkillsOnlyParams {
+  jobData: JobData
+  technicalProfile: TechnicalProfile
+  academicProfile?: AcademicProfile | null
+}
+
+export async function analyzeSkillsOnly({ jobData, technicalProfile, academicProfile }: SkillsOnlyParams): Promise<SkillsOnlyResult> {
+  const desc = jobData.description
+  const jobDescription = desc.length > 4000
+    ? desc.slice(0, 2000) + '\n\n[...]\n\n' + desc.slice(-2000)
+    : desc
+
+  const { object } = await generateObject({
+    model: anthropic('claude-sonnet-4-20250514'),
+    schema: skillsOnlySchema,
+    system: `You are a technical skills compatibility analyst for the French job-matching app Feeling.
+Your sole task is to evaluate how well a candidate's technical skills and work experience match a job listing.
+
+IMPORTANT: All output strings (strengths, attentionPoints) MUST be written in French using "tu" (informal you).
+
+SCORING RULES:
+- skillsScore: 0–100. Be realistic — use the full range, do not cluster around 50.
+- Apply a 10–20 point penalty if the listing requires a higher education level than the candidate's.
+- Apply a 5–10 point bonus if the candidate's field of study is directly relevant to the role.
+
+OUTPUT FORMAT (strict):
+- skillsAnalysis.strengths: 2–3 sentences in French. Each must cite at least ONE specific skill or experience from the candidate matched against ONE specific requirement from the listing.
+- skillsAnalysis.attentionPoints: 1–2 sentences in French. Must name at least ONE expected skill that is absent or weak in the candidate's profile, or an academic gap if the listing requires it.`,
+    prompt: `JOB LISTING:
+Title: ${jobData.title}
+Company: ${jobData.company}
+Location: ${jobData.location}
+Contract type: ${jobData.type}
+Remote policy: ${jobData.remote}
+
+Description:
+${jobDescription}
+
+---
+
+CANDIDATE TECHNICAL PROFILE:
+Skills: ${technicalProfile.skills.join(', ') || '(none listed)'}
+
+Work experiences:
+${technicalProfile.experiences.length > 0
+  ? technicalProfile.experiences.map(e =>
+      `- ${e.job_title} at ${e.company_name} (${e.start_date} – ${e.is_current ? 'present' : e.end_date ?? ''})${e.main_tasks ? `: ${e.main_tasks}` : ''}`
+    ).join('\n')
+  : '(none listed)'}
+
+${academicProfile ? `Academic background:
+- Education level: ${academicProfile.education_level.toUpperCase()}
+- Degree: ${academicProfile.diploma_name}
+- School: ${academicProfile.school_name}
+- Field(s) of study: ${academicProfile.field_of_study.length > 0 ? academicProfile.field_of_study.join(', ') : '(not provided)'}
+- Graduation year: ${academicProfile.graduation_date}` : 'Academic background: not provided'}
+
+---
+
+Evaluate the candidate's technical fit for this role. Be honest — a low score is better than a flattering but inaccurate one.`,
+  })
+
+  return object
+}
+
 export async function analyzeJobMatch(profiles: UserProfiles): Promise<AnalysisResult> {
   const { jobData, personality, values, dreamJob, currentSituation, technicalProfile, academicProfile } = profiles
   
