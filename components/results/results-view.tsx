@@ -43,6 +43,17 @@ interface ResultsViewProps {
   userId: string
 }
 
+/**
+ * Si la valeur est un placeholder "Non spécifié" renvoyé par le scraper, on
+ * préfixe par le nom du champ ("Contrat : non spécifié") pour rester explicite.
+ * Sinon on affiche la valeur telle quelle.
+ */
+function formatRecapField(label: string, value: string): string {
+  return value.trim().toLowerCase() === 'non spécifié'
+    ? `${label} : non spécifié`
+    : value
+}
+
 // US 13.1 : verdict clair dérivé du score global.
 function getVerdict(score: number): {
   label: string
@@ -246,17 +257,17 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
               )}
               {analysis.job_type && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {analysis.job_type}
+                  {formatRecapField('Contrat', analysis.job_type)}
                 </span>
               )}
               {analysis.job_location && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {analysis.job_location}
+                  {formatRecapField('Lieu', analysis.job_location)}
                 </span>
               )}
               {analysis.job_remote && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {analysis.job_remote}
+                  {formatRecapField('Télétravail', analysis.job_remote)}
                 </span>
               )}
               {analysis.job_url && (

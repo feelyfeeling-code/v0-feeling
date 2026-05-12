@@ -9,6 +9,8 @@ import { FeelingLogo } from '@/components/feeling-logo'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { computeOverallScore } from '@/lib/score'
+import { toast } from 'sonner'
 import {
   ChevronDown,
   ChevronUp,
@@ -16,7 +18,7 @@ import {
   AlertTriangle,
   Send,
   RefreshCw,
-  CheckCircle2,
+  Sparkles,
 } from 'lucide-react'
 
 interface Analysis {
@@ -43,6 +45,18 @@ interface Analysis {
 interface CompleteResultsViewProps {
   analysis: Analysis
   userId: string
+  hasTechnicalProfile: boolean
+}
+
+/**
+ * Si la valeur est un placeholder "Non spécifié" renvoyé par le scraper, on
+ * préfixe par le nom du champ ("Contrat : non spécifié") pour rester explicite.
+ * Sinon on affiche la valeur telle quelle.
+ */
+function formatRecapField(label: string, value: string): string {
+  return value.trim().toLowerCase() === 'non spécifié'
+    ? `${label} : non spécifié`
+    : value
 }
 
 // US 15.1 : verdict précis sur 3 niveaux.
@@ -164,9 +178,33 @@ function SectionCard({
   )
 }
 
-export function CompleteResultsView({ analysis, userId }: CompleteResultsViewProps) {
+export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: CompleteResultsViewProps) {
   const router = useRouter()
   const [isMockCompleting, setIsMockCompleting] = useState(false)
+  const [isAnalyzingSkills, setIsAnalyzingSkills] = useState(false)
+
+  // Pour les analyses antérieures (skills_score = null) où l'utilisateur a
+  // déjà rempli son profil technique : on déclenche /api/analyze-complete
+  // directement, sans repasser par le formulaire de profil.
+  const handleAnalyzeSkills = async () => {
+    setIsAnalyzingSkills(true)
+    const toastId = toast.loading('Analyse des compétences en cours...')
+    try {
+      const response = await fetch('/api/analyze-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysisId: analysis.id, userId }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Erreur lors de l\'analyse')
+      toast.success('Analyse complète prête !', { id: toastId })
+      router.refresh()
+    } catch (error) {
+      toast.dismiss(toastId)
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'analyse')
+      setIsAnalyzingSkills(false)
+    }
+  }
 
   const handleMockComplete = async () => {
     setIsMockCompleting(true)
@@ -192,14 +230,12 @@ export function CompleteResultsView({ analysis, userId }: CompleteResultsViewPro
     (analysis.personality_score + analysis.values_score) / 2,
   )
   const hardScore = analysis.skills_score ?? 0
-  const rawCombined = hasSkills
-    ? Math.round(softScore * 0.5 + hardScore * 0.5)
-    : softScore
-
-  // Dealbreaker cap à 30/100 appliqué après pondération.
-  const effectiveOverall = analysis.has_dealbreakers
-    ? Math.min(rawCombined, 30)
-    : rawCombined
+  const effectiveOverall = computeOverallScore({
+    personality_score: analysis.personality_score,
+    values_score: analysis.values_score,
+    skills_score: analysis.skills_score,
+    has_dealbreakers: analysis.has_dealbreakers,
+  })
 
   const verdict = getVerdict(effectiveOverall)
 
@@ -230,21 +266,14 @@ export function CompleteResultsView({ analysis, userId }: CompleteResultsViewPro
       <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <FeelingLogo size="md" />
-          <div className="flex items-center gap-3">
-            <Link href="/accueil">
-              <Button variant="outline" size="sm">
-                Nouvelle analyse
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="text-muted-foreground"
-            >
-              Déconnexion
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="text-muted-foreground"
+          >
+            Déconnexion
+          </Button>
         </div>
       </header>
 
@@ -264,14 +293,8 @@ export function CompleteResultsView({ analysis, userId }: CompleteResultsViewPro
         )}
 
         <div className="container mx-auto px-4 py-10 max-w-4xl space-y-8">
-          {/* Badge analyse complète */}
-          <div className="inline-flex items-center gap-2 bg-accent/30 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            Analyse complète · Soft skills + Hard skills
-          </div>
-
           {/* Titre */}
-          <h1 className="text-3xl md:text-4xl font-extrabold border-b border-border pb-3">
+          <h1 className="text-3xl md:text-4xl font-extrabold">
             Ton feeling complet avec cette offre
           </h1>
 
@@ -287,17 +310,17 @@ export function CompleteResultsView({ analysis, userId }: CompleteResultsViewPro
               )}
               {analysis.job_type && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {analysis.job_type}
+                  {formatRecapField('Contrat', analysis.job_type)}
                 </span>
               )}
               {analysis.job_location && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {analysis.job_location}
+                  {formatRecapField('Lieu', analysis.job_location)}
                 </span>
               )}
               {analysis.job_remote && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {analysis.job_remote}
+                  {formatRecapField('Télétravail', analysis.job_remote)}
                 </span>
               )}
               {analysis.job_url && (
@@ -313,11 +336,6 @@ export function CompleteResultsView({ analysis, userId }: CompleteResultsViewPro
               )}
             </div>
           </section>
-
-          <p className="text-sm text-muted-foreground">
-            Analyse finale combinant ta personnalité, tes valeurs et tes compétences
-            techniques.
-          </p>
 
           {/* US 15.1 : score global en grand + barre + verdict */}
           <section className="space-y-6 flex flex-col items-center">
@@ -402,6 +420,38 @@ export function CompleteResultsView({ analysis, userId }: CompleteResultsViewPro
                 strengths={analysis.skills_analysis.strengths ?? []}
                 attentionPoints={analysis.skills_analysis.attentionPoints ?? []}
               />
+            ) : hasTechnicalProfile ? (
+              <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-5 flex flex-col justify-between gap-3">
+                <div>
+                  <p className="font-bold text-sm">Compétences</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Tes compétences n&apos;ont pas encore été comparées à cette
+                    offre. Lance l&apos;analyse pour obtenir ton score hard skills.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleAnalyzeSkills}
+                    disabled={isAnalyzingSkills}
+                    className="w-full bg-foreground text-background hover:bg-foreground/90"
+                  >
+                    {isAnalyzingSkills ? (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5 mr-1.5 animate-pulse" />
+                        Analyse en cours...
+                      </>
+                    ) : (
+                      'Lancer l\'analyse des compétences'
+                    )}
+                  </Button>
+                  <Link href={`/profil-technique?from=${analysis.id}`}>
+                    <Button size="sm" variant="ghost" className="w-full text-xs">
+                      Modifier mon profil avant
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-5 flex flex-col justify-between gap-3">
                 <div>

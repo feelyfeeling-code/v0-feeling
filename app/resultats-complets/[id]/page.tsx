@@ -20,16 +20,38 @@ export default async function CompleteResultsPage({ params }: Props) {
     redirect('/connexion')
   }
 
-  const { data: analysis, error } = await supabase
-    .from('job_analyses')
-    .select('*')
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .single()
+  const [analysisResult, skillsResult, experienceResult] = await Promise.all([
+    supabase
+      .from('job_analyses')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single(),
+    supabase
+      .from('technical_skills')
+      .select('skills')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('work_experiences')
+      .select('id')
+      .eq('user_id', user.id)
+      .limit(1),
+  ])
 
-  if (error || !analysis) {
+  if (analysisResult.error || !analysisResult.data) {
     notFound()
   }
 
-  return <CompleteResultsView analysis={analysis} userId={user.id} />
+  const hasTechnicalProfile =
+    (skillsResult.data?.skills?.length ?? 0) > 0 ||
+    (experienceResult.data?.length ?? 0) > 0
+
+  return (
+    <CompleteResultsView
+      analysis={analysisResult.data}
+      userId={user.id}
+      hasTechnicalProfile={hasTechnicalProfile}
+    />
+  )
 }
