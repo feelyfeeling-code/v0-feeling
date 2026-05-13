@@ -225,7 +225,7 @@ export function KitCandidatureView({
 
           {/* Intro */}
           <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-extrabold">
+            <h1 className="text-3xl md:text-4xl font-display font-extrabold">
               Ton kit de candidature
             </h1>
             <p className="text-muted-foreground">
@@ -274,7 +274,7 @@ export function KitCandidatureView({
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 mr-2" />
-                        Générer mon CV
+                        Adapter mon CV
                       </>
                     )}
                   </Button>
@@ -338,7 +338,7 @@ export function KitCandidatureView({
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 mr-2" />
-                        Générer ma lettre de motivation
+                        Preparer ma lettre
                       </>
                     )}
                   </Button>

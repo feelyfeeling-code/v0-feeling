@@ -36,7 +36,7 @@ export function Header({ isAuthenticated = false, showAuth = true }: HeaderProps
                 onClick={handleSignOut}
                 disabled={isLoading}
               >
-                {isLoading ? 'Déconnexion...' : 'Déconnexion'}
+                {isLoading ? 'Deconnexion...' : 'Deconnexion'}
               </Button>
             ) : (
               <>

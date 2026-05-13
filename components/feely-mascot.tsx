@@ -28,9 +28,9 @@ export function FeelyMascot({
   return (
     <div className={cn('relative inline-block', className)}>
       {speechBubble && (
-        <div className="absolute -top-8 -right-4 bg-white border border-border rounded-xl px-3 py-1 text-sm font-medium shadow-sm whitespace-nowrap">
+        <div className="absolute -top-8 -right-4 bg-primary/20 border border-primary/30 rounded-xl px-3 py-1 text-sm font-medium shadow-sm whitespace-nowrap">
           {speechBubble}
-          <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white border-r border-b border-border rotate-45" />
+          <div className="absolute -bottom-1 left-4 w-2 h-2 bg-primary/20 border-r border-b border-primary/30 rotate-45" />
         </div>
       )}
       <img

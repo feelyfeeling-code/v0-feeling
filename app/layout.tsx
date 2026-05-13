@@ -1,20 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Fraunces, Geist_Mono } from "next/font/google";
+import { DM_Sans, Inter, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
+// Inter - Body text (Editorial Charter)
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+// DM Sans - Titles (Editorial Charter)
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
-});
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
-  style: ["normal", "italic"],
 });
 
 const geistMono = Geist_Mono({
@@ -86,7 +87,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#D4C4FB",
+  themeColor: "#FF8E6E", // Peach - Editorial Charter
   width: "device-width",
   initialScale: 1,
 };
@@ -129,7 +130,7 @@ export default function RootLayout({
 
       </head>
       <body
-        className={`${dmSans.variable} ${fraunces.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${inter.variable} ${dmSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
         {children}
         <Toaster position="top-center" />

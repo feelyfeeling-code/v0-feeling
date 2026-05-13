@@ -59,30 +59,30 @@ function formatRecapField(label: string, value: string): string {
     : value
 }
 
-// US 15.1 : verdict précis sur 3 niveaux.
+// Editorial Charter: verdicts based on score thresholds
 function getVerdict(score: number): {
-  label: 'Fort potentiel' | 'Match partiel' | 'Faible adéquation'
+  label: 'Bon feeling' | 'Match partiel' | 'Feeling faible'
   tone: 'strong' | 'partial' | 'weak'
   headline: string
 } {
-  if (score >= 70) {
+  if (score >= 65) {
     return {
-      label: 'Fort potentiel',
+      label: 'Bon feeling',
       tone: 'strong',
-      headline: 'Super feeling sur le profil complet',
+      headline: 'Tu as un super feeling avec cette offre',
     }
   }
   if (score >= 40) {
     return {
       label: 'Match partiel',
       tone: 'partial',
-      headline: 'Bon feeling mais points à travailler',
+      headline: 'Il y a une vraie base interessante ici',
     }
   }
   return {
-    label: 'Faible adéquation',
+    label: 'Feeling faible',
     tone: 'weak',
-    headline: 'Cette offre colle peu avec ton profil',
+    headline: 'Cette offre ne te ressemble pas vraiment',
   }
 }
 
@@ -294,7 +294,7 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
 
         <div className="container mx-auto px-4 py-10 max-w-4xl space-y-8">
           {/* Titre */}
-          <h1 className="text-3xl md:text-4xl font-extrabold">
+          <h1 className="text-3xl md:text-4xl font-display font-extrabold">
             Ton feeling complet avec cette offre
           </h1>
 
@@ -475,13 +475,13 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
             <Link href={`/kit-candidature/${analysis.id}`} className="flex-1">
               <Button className="w-full h-12 bg-foreground text-background hover:bg-foreground/90 font-medium">
                 <FileText className="w-4 h-4 mr-2" />
-                Générer mon kit de candidature
+                Generer mon kit
               </Button>
             </Link>
             <Link href="/accueil" className="flex-1">
               <Button variant="outline" className="w-full h-12 font-medium">
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Tester une nouvelle offre
+                Analyser une autre offre
               </Button>
             </Link>
           </section>

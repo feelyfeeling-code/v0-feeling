@@ -54,10 +54,10 @@ export function LoginForm() {
           <FeelyMascot variant="purple" size="lg" className="mb-6" />
 
           {/* Title */}
-          <h1 className="text-3xl font-bold text-center mb-2">
-            Ravi de te revoir !
+          <h1 className="text-3xl font-display font-bold text-center mb-2">
+            Content de te revoir
           </h1>
-          <p className="text-2xl font-bold text-center mb-8">
+          <p className="text-2xl font-display font-bold text-center mb-8">
             Connecte-toi
           </p>
 

@@ -23,18 +23,18 @@ export function WelcomePopup({ firstName, onClose }: WelcomePopupProps) {
         
         <div className="pt-4">
           <p className="text-muted-foreground mb-2">
-            Feely a bien reçu tout ce qu&apos;il faut pour te connaître.
+            J&apos;ai bien recu tout ce qu&apos;il faut pour te connaitre.
           </p>
           <p className="text-muted-foreground mb-6">
-            Tu es prêt(e) pour la suite !
+            Tu es pret(e) pour la suite
           </p>
           
-          <h2 className="text-2xl md:text-3xl font-bold text-primary mb-4">
-            Dès maintenant, tu peux tester des offres !
+          <h2 className="text-2xl md:text-3xl font-display font-bold text-primary mb-4">
+            Des maintenant, tu peux tester des offres
           </h2>
           
           <p className="text-muted-foreground mb-8">
-            Feely analysera si elles te ressemblent vraiment.
+            Je t&apos;aiderai a mieux cibler celles sur lesquelles candidater.
           </p>
           
           <div className="flex items-end justify-between">

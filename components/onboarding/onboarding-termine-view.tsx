@@ -29,17 +29,17 @@ export function OnboardingTermineView() {
           {/* Bloc texte + CTA */}
           <div className="flex-1 max-w-xl">
             <p className="text-base md:text-lg mb-6 leading-relaxed">
-              Feely a bien reçu tout ce qu&apos;il faut pour te connaître.
+              J&apos;ai bien recu tout ce qu&apos;il faut pour te connaitre.
               <br />
-              Tu es prêt(e) pour la suite&nbsp;!
+              Tu es pret(e) pour la suite
             </p>
 
-            <h1 className="text-2xl md:text-3xl font-bold text-primary mb-6">
-              Dès maintenant, tu peux tester des offres&nbsp;!
+            <h1 className="text-2xl md:text-3xl font-display font-bold text-primary mb-6">
+              Des maintenant, tu peux tester des offres
             </h1>
 
             <p className="text-base md:text-lg mb-8">
-              Feely analysera si elles te ressemblent vraiment.
+              Je t&apos;aiderai a mieux cibler celles sur lesquelles candidater.
             </p>
 
             <Button

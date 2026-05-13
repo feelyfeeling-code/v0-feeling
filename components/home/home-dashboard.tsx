@@ -208,8 +208,8 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
           <div className="flex flex-col items-center gap-6 text-center px-4">
             <FeelyMascot variant="purple" size="xl" className="animate-bounce" />
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold">Feely analyse l&apos;offre&hellip;</h2>
-              <p className="text-muted-foreground">Ça peut prendre quelques secondes, patience !</p>
+              <h2 className="text-2xl font-display font-bold">Je lis l&apos;offre et je regarde ce que le poste demande vraiment&hellip;</h2>
+              <p className="text-muted-foreground">Je compare avec tes reperes et je prepare une reponse claire.</p>
             </div>
             <div className="flex gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-primary animate-bounce [animation-delay:0ms]" />
@@ -262,11 +262,11 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
           <div className="container mx-auto px-4">
             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-16">
               <div className="flex-1">
-                <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                  Cette offre, est-elle faite pour toi ?
+                <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">
+                  Cette offre te correspond-elle vraiment ?
                 </h1>
                 <p className="text-muted-foreground mb-6">
-                  Colle le lien de l&apos;offre et voyons si le job te correspond vraiment !
+                  Colle le lien d&apos;une offre et je te dis si elle te ressemble sur ta personnalite, tes valeurs et tes competences.
                 </p>
 
                 {/* Toggle URL / Coller */}
@@ -325,12 +325,12 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                           Analyse en cours...
                         </>
                       ) : (
-                        'Lancer le matching'
+                        'Analyser l\'offre'
                       )}
                     </Button>
 
                     <p className="text-xs text-muted-foreground">
-                      Site protégé ou scraping impossible ?{' '}
+                      Site protege ou scraping impossible ?{' '}
                       <button
                         type="button"
                         onClick={() => setMode('paste')}
@@ -399,11 +399,11 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                           Analyse en cours...
                         </>
                       ) : (
-                        'Lancer le matching'
+                        'Analyser l\'offre'
                       )}
                     </Button>
                     <p className="text-xs text-muted-foreground">
-                      Champs marqués * obligatoires. Plus le texte est complet, meilleure sera l&apos;analyse.
+                      Champs marques * obligatoires. Plus le texte est complet, meilleure sera l&apos;analyse.
                     </p>
                   </form>
                 )}
@@ -425,13 +425,11 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                   <FeelyMascot variant="blue" size="lg" speechBubble="Ici Feely" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold mb-4">
+                  <h2 className="text-2xl font-display font-bold mb-4">
                     <FeelingLogoInline />, qu&apos;est-ce que c&apos;est ?
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    Feeling, c&apos;est ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 
-                    trouver un job qui te ressemble vraiment. Pas juste un job qui coche 
-                    les cases, un job qui colle avec ta personnalité et tes valeurs.
+                    Le bon job, c&apos;est celui qui matche avec ta personnalite et tes valeurs, pas juste tes competences. Je t&apos;aide a mieux cibler les offres sur lesquelles candidater.
                   </p>
                 </div>
               </div>
@@ -442,7 +440,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
         {/* How it works */}
         <section className="py-12">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold mb-8">Comment ça marche ?</h2>
+            <h2 className="text-2xl font-display font-bold mb-8">Comment ca marche ?</h2>
             
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-secondary rounded-2xl p-6">
@@ -485,7 +483,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
         {recentAnalyses.length > 0 && (
           <section className="py-12 bg-muted/30">
             <div className="container mx-auto px-4">
-              <h2 className="text-2xl font-bold mb-8">Tes dernières analyses</h2>
+              <h2 className="text-2xl font-display font-bold mb-8">Tes dernieres analyses</h2>
               
               <div className="grid gap-4">
                 {recentAnalyses.map((analysis) => (

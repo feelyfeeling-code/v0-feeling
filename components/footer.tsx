@@ -13,14 +13,14 @@ export function Footer() {
               <FeelingLogo size="lg" className="text-background" asLink={false} />
               <div className="w-px h-12 bg-background/30" />
               <p className="text-lg font-medium leading-tight">
-                Bac+5 en recherche ?<br />
-                Postule là où tu as un bon <span className="text-primary">feeling</span>.
+                Le bon job, c&apos;est celui qui matche<br />
+                avec ta personnalite et tes valeurs.
               </p>
             </div>
             
             {/* Social Links */}
             <div className="mt-4">
-              <p className="text-sm text-background/70 mb-3">Suivez-nous sur les réseaux sociaux</p>
+              <p className="text-sm text-background/70 mb-3">Suis-nous sur les reseaux sociaux</p>
               <div className="flex items-center gap-4">
                 <Link 
                   href="https://www.instagram.com/feely.feeling/"
@@ -53,7 +53,7 @@ export function Footer() {
             
             {/* Contact */}
             <div className="mt-4">
-              <p className="text-sm text-background/70 mb-1">Une question ou autre ? Contacte-nous !</p>
+              <p className="text-sm text-background/70 mb-1">Une question ? Contacte-nous</p>
               <a 
                 href="mailto:feely.feeling@gmail.com"
                 className="text-sm hover:text-primary transition-colors"

@@ -37,12 +37,12 @@ export function LandingPage() {
         <div className="container mx-auto px-4 relative">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-14">
             <div className="flex-2 text-center lg:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-balance">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight text-balance">
                Bac+5 en recherche&#160;? Postule là où tu as un bon{' '}
                 <FeelingLogoInline color="var(--color-primary)" heightEm={1.1} />
               </h1>
               <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl">
-                En Bac+5, tu as souvent plusieurs options devant toi. Pas toujours facile de savoir laquelle est vraiment faite pour toi. Feeling t'aide à comprendre si une offre colle avec qui tu es et ce que tu recherches vraiment.
+                Après plusieurs mois de recherche sans retour, tu doutes peut-être de tes choix. Feeling t&apos;aide à mieux cibler les offres sur lesquelles candidater, en partant de qui tu es vraiment.
               </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
@@ -70,7 +70,7 @@ export function LandingPage() {
             
             <div className="flex-1 flex justify-center">
               <div className="relative">
-                <FeelyMascot variant="purple" size="xl" speechBubble="Salut ! Je suis Feely" />
+                <FeelyMascot variant="purple" size="xl" speechBubble="Je t'aide a mieux cibler tes candidatures" />
               </div>
             </div>
           </div>
@@ -86,13 +86,11 @@ export function LandingPage() {
                 <FeelyMascot variant="blue" size="lg" speechBubble="Ici Feely" />
               </div>
               <div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-4">
                   <FeelingLogoInline />, qu&apos;est-ce que c&apos;est ?
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Feeling, c&apos;est ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 
-                  trouver un job qui te ressemble vraiment. Pas juste un job qui coche 
-                  les cases, un job qui colle avec ta personnalité et tes valeurs.
+                  Le bon job, c&apos;est celui qui matche avec ta personnalité et tes valeurs, pas juste tes compétences. Feeling part de qui tu es, de ce qui te fait vibrer au travail, et t&apos;aide à identifier les offres avec lesquelles tu as vraiment un bon feeling.
                 </p>
               </div>
             </div>
@@ -103,7 +101,7 @@ export function LandingPage() {
       {/* How it Works Section */}
       <section id="comment-ca-marche" className="py-20 scroll-mt-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-16">
             Comment ça marche ?
           </h2>
           
@@ -161,7 +159,7 @@ export function LandingPage() {
       {/* Features Section */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-16">
             Pourquoi utiliser Feeling ?
           </h2>
           
@@ -204,11 +202,11 @@ export function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <FeelyMascot variant="happy" size="lg" className="mx-auto mb-8" />
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Prêt à trouver un job qui te ressemble ?
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">
+              Tu mérites un endroit où tu peux être toi-même
             </h2>
             <p className="text-lg text-muted-foreground mb-10">
-              Rejoins Feeling et découvre si tes prochaines opportunités sont vraiment faites pour toi.
+              Feeling t&apos;aide à mieux cibler les offres sur lesquelles candidater. Pas celles qui cochent les cases, celles qui te correspondent vraiment.
             </p>
             <Button 
               size="lg" 

@@ -616,7 +616,7 @@ export function ProfilePage({
 
       <main className="flex-1 container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-1">Mon profil</h1>
+          <h1 className="text-2xl font-display font-bold mb-1">Mon profil</h1>
           <p className="text-muted-foreground text-sm">
             Mets à jour tes informations pour affiner les analyses.
           </p>

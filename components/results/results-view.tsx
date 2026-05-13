@@ -54,30 +54,30 @@ function formatRecapField(label: string, value: string): string {
     : value
 }
 
-// US 13.1 : verdict clair dérivé du score global.
+// Editorial Charter: verdicts based on score thresholds
 function getVerdict(score: number): {
   label: string
   tone: 'strong' | 'partial' | 'weak'
   headline: string
 } {
-  if (score >= 70) {
+  if (score >= 65) {
     return {
-      label: 'Fort potentiel',
+      label: 'Bon feeling',
       tone: 'strong',
-      headline: 'Super feeling sur la personnalité & les valeurs',
+      headline: 'Tu as un super feeling avec cette offre',
     }
   }
   if (score >= 40) {
     return {
       label: 'Match partiel',
       tone: 'partial',
-      headline: 'Bon feeling sur la personnalité & les valeurs',
+      headline: 'Il y a une vraie base interessante ici',
     }
   }
   return {
-    label: 'Faible adéquation',
+    label: 'Feeling faible',
     tone: 'weak',
-    headline: 'Feeling faible sur la personnalité & les valeurs',
+    headline: 'Cette offre ne te ressemble pas vraiment',
   }
 }
 
@@ -236,7 +236,7 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
 
         <div className="container mx-auto px-4 py-10 max-w-4xl space-y-8">
           {/* Titre */}
-          <h1 className="text-3xl md:text-4xl font-extrabold border-b border-border pb-3">
+          <h1 className="text-3xl md:text-4xl font-display font-extrabold border-b border-border pb-3">
             Ton feeling avec cette offre
           </h1>
 
@@ -334,30 +334,28 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
           {!hasTechnicalProfile ? (
             <section className="rounded-3xl bg-primary/30 p-6 md:p-8 flex flex-col items-center text-center gap-4">
               <p className="text-base md:text-lg font-medium max-w-xl">
-                Pour une analyse globale, complète ton profil technique pour un feeling
-                encore plus précis.
+                Pour t&apos;aider encore mieux, j&apos;ai besoin de quelques infos en plus sur tes competences. Ca prend 2 minutes.
               </p>
               <Link href={`/profil-technique?from=${analysis.id}`}>
                 <Button
                   size="lg"
                   className="h-12 px-6 rounded-2xl bg-foreground text-background hover:bg-foreground/90 text-base font-bold"
                 >
-                  Compléter mon profil technique
+                  Completer mon profil
                 </Button>
               </Link>
             </section>
           ) : (
             <section className="rounded-3xl bg-accent/30 p-6 md:p-8 flex flex-col items-center text-center gap-4">
               <p className="text-base md:text-lg font-medium max-w-xl">
-                Ton profil technique est déjà renseigné. Consulte l&apos;analyse complète
-                incluant la compatibilité des compétences.
+                Ton profil technique est deja renseigne. Consulte l&apos;analyse complete incluant tes competences.
               </p>
               <Link href={`/resultats-complets/${analysis.id}`}>
                 <Button
                   size="lg"
                   className="h-12 px-6 rounded-2xl bg-foreground text-background hover:bg-foreground/90 text-base font-bold"
                 >
-                  Voir les résultats complets
+                  Voir mon score
                 </Button>
               </Link>
             </section>

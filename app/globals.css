@@ -4,34 +4,34 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Feeling Brand Colors */
-  --background: oklch(1 0 0); /* White */
-  --foreground: oklch(0.145 0 0); /* Near black */
+  /* Feeling Brand Colors - Editorial Charter */
+  --background: oklch(1 0 0); /* #FFFFFF White */
+  --foreground: oklch(0.05 0 0); /* #010101 Near black */
   
-  /* Lavender - Primary accent */
-  --primary: oklch(0.78 0.12 290); /* #D4C4FB lavender */
-  --primary-foreground: oklch(0.145 0 0);
+  /* Peach - Primary accent (Feely's signature color) */
+  --primary: oklch(0.75 0.13 40); /* #FF8E6E peach */
+  --primary-foreground: oklch(0.05 0 0);
   
-  /* Peach - Secondary */
-  --secondary: oklch(0.92 0.06 70); /* #FFE8D6 peach */
-  --secondary-foreground: oklch(0.145 0 0);
+  /* Lavender - Secondary */
+  --secondary: oklch(0.82 0.1 290); /* #CCB8FF lavender */
+  --secondary-foreground: oklch(0.05 0 0);
   
-  /* Mint - Accent/Success */
-  --accent: oklch(0.88 0.1 155); /* #A8F0C6 mint green */
-  --accent-foreground: oklch(0.145 0 0);
+  /* Mint/Green - Accent/Success */
+  --accent: oklch(0.78 0.15 160); /* #34D399 green */
+  --accent-foreground: oklch(0.05 0 0);
   
-  /* Blue - Info/Feely mascot */
-  --info: oklch(0.82 0.1 240); /* #B8D4F0 light blue */
-  --info-foreground: oklch(0.145 0 0);
+  /* Info - Light version of lavender */
+  --info: oklch(0.9 0.06 290);
+  --info-foreground: oklch(0.05 0 0);
   
-  /* Yellow - Warning/Attention */
-  --warning: oklch(0.92 0.12 95); /* #FFF3B0 yellow */
-  --warning-foreground: oklch(0.145 0 0);
+  /* Warning - Light peach */
+  --warning: oklch(0.92 0.08 40);
+  --warning-foreground: oklch(0.05 0 0);
   
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.05 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.05 0 0);
   
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.45 0 0);
@@ -41,30 +41,31 @@
   
   --border: oklch(0.9 0 0);
   --input: oklch(0.95 0 0);
-  --ring: oklch(0.78 0.12 290); /* Lavender ring */
+  --ring: oklch(0.75 0.13 40); /* Peach ring */
   
   /* Chart colors using brand palette */
-  --chart-1: oklch(0.78 0.12 290); /* Lavender */
-  --chart-2: oklch(0.88 0.1 155); /* Mint */
-  --chart-3: oklch(0.82 0.1 240); /* Blue */
-  --chart-4: oklch(0.92 0.12 95); /* Yellow */
-  --chart-5: oklch(0.92 0.06 70); /* Peach */
+  --chart-1: oklch(0.75 0.13 40); /* Peach */
+  --chart-2: oklch(0.78 0.15 160); /* Green */
+  --chart-3: oklch(0.82 0.1 290); /* Lavender */
+  --chart-4: oklch(0.05 0 0); /* Black */
+  --chart-5: oklch(1 0 0); /* White */
   
   --radius: 0.75rem;
   
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.78 0.12 290);
-  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-foreground: oklch(0.05 0 0);
+  --sidebar-primary: oklch(0.75 0.13 40);
+  --sidebar-primary-foreground: oklch(0.05 0 0);
   --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-accent-foreground: oklch(0.05 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.78 0.12 290);
+  --sidebar-ring: oklch(0.75 0.13 40);
 }
 
 @theme inline {
-  --font-sans: 'DM Sans', 'DM Sans Fallback', system-ui, sans-serif;
-  --font-display: 'Fraunces', 'Fraunces Fallback', serif;
+  /* Typography - Editorial Charter: DM Sans for titles, Inter for body */
+  --font-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
+  --font-display: 'DM Sans', 'DM Sans Fallback', sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback', monospace;
   
   --color-background: var(--background);
@@ -92,9 +93,9 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   
-  /* Custom Feeling colors */
-  --color-lavender: var(--primary);
-  --color-peach: var(--secondary);
+  /* Custom Feeling colors - Editorial Charter */
+  --color-peach: var(--primary);
+  --color-lavender: var(--secondary);
   --color-mint: var(--accent);
   --color-info: var(--info);
   --color-warning: var(--warning);
@@ -123,11 +124,14 @@
   }
 }
 
-/* Feeling Logo Font Style */
-.font-feeling-logo {
-  font-family: 'Fraunces', serif;
-  font-style: italic;
-  font-weight: 400;
+/* Feeling Display Font Style (DM Sans for headings per Editorial Charter) */
+.font-display {
+  font-family: var(--font-display), 'DM Sans', sans-serif;
+}
+
+/* Feeling Body Font Style (Inter for body text per Editorial Charter) */
+.font-body {
+  font-family: var(--font-sans), 'Inter', sans-serif;
 }
 
 /* Custom scrollbar */

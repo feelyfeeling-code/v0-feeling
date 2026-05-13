@@ -108,11 +108,11 @@ export function SignupForm() {
           <div className="flex flex-col items-center">
             <FeelyMascot variant="blue" size="lg" className="mb-6" />
             
-            <h1 className="text-3xl font-bold text-center mb-2">
-              Bienvenue !
+            <h1 className="text-3xl font-display font-bold text-center mb-2">
+              Bienvenue
             </h1>
             <p className="text-center text-muted-foreground mb-8">
-              Créons ton compte ensemble
+              Creons ton compte ensemble
             </p>
 
             <form onSubmit={handleStep1} className="w-full space-y-6">
@@ -170,11 +170,11 @@ export function SignupForm() {
           <div className="flex flex-col items-center">
             <FeelingLogo size="lg" className="mb-6" asLink={false} />
             
-            <h1 className="text-2xl font-bold text-center mb-2">
-              Parfait {firstName} !
+            <h1 className="text-2xl font-display font-bold text-center mb-2">
+              Parfait {firstName}
             </h1>
             <p className="text-center text-muted-foreground mb-8">
-              Plus qu&apos;une étape pour commencer
+              Plus qu&apos;une etape pour commencer
             </p>
 
             <form onSubmit={handleStep2} className="w-full space-y-6">

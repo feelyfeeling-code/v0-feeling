@@ -14,18 +14,17 @@ export function WelcomeStep({ firstName, onNext }: WelcomeStepProps) {
     <div className="max-w-2xl mx-auto text-center py-8">
       <FeelyMascot variant="purple" size="xl" className="mx-auto mb-8" speechBubble={`Salut ${firstName} !`} />
       
-      <h1 className="text-3xl md:text-4xl font-bold mb-4">
-        Bienvenue sur Feeling !
+      <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">
+        Bienvenue sur Feeling
       </h1>
       
       <p className="text-lg text-muted-foreground mb-8">
-        Avant de pouvoir t&apos;aider à trouver le job qui te correspond vraiment, 
-        j&apos;ai besoin d&apos;apprendre à te connaître. Ça ne prendra que quelques minutes !
+        Je suis Feely, et je suis la pour t&apos;aider a mieux cibler les offres sur lesquelles candidater. Pour ca, j&apos;ai besoin de te connaitre un peu. Pas ton CV, toi.
       </p>
       
       {/* What we'll cover */}
       <div className="bg-muted/50 rounded-2xl p-6 mb-8">
-        <h2 className="font-semibold mb-4 text-left">Ce qu&apos;on va découvrir ensemble :</h2>
+        <h2 className="font-display font-semibold mb-4 text-left">Ce qu&apos;on va decouvrir ensemble :</h2>
         <div className="grid gap-4">
           <div className="flex items-center gap-4 text-left">
             <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
