@@ -49,11 +49,14 @@ interface FeelingLogoProps {
   size?: 'sm' | 'md' | 'lg'
   className?: string
   asLink?: boolean
+  color?: string
 }
 
-export function FeelingLogo({ size = 'md', className, asLink = true }: FeelingLogoProps) {
+export function FeelingLogo({ size = 'md', className, asLink = true, color }: FeelingLogoProps) {
   const { width, height } = sizeMap[size]
-  const svg = <LogoSvg width={width} height={height} className={className} />
+  const svg = <LogoSvg width={width} height={height} className={className}     style={{
+        color: color ?? 'currentColor',
+      }} />
 
   if (asLink) {
     return (

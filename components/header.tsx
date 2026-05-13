@@ -24,7 +24,7 @@ export function Header({ isAuthenticated = false, showAuth = true }: HeaderProps
   }
   
   return (
-    <header className="w-full border-b border-border bg-background">
+    <header className="w-full border-border bg-background">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <FeelingLogo size="md" />
         
