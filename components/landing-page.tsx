@@ -35,7 +35,7 @@ export function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-24 overflow-hidden">
+      <section className="relative pt-24 overflow-hidden">
         <div className="container mx-auto ">
           <div className="flex flex-col lg:flex-row  gap-50">
             <div className="flex-2 text-center lg:text-left">
@@ -79,16 +79,17 @@ export function LandingPage() {
       </section>
 
       {/* What is Feeling Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="lg:mt-[-100px] pb-10 z-10 relative">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto bg-background rounded-3xl p-8 md:p-12 shadow-sm border border-border">
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="flex-shrink-0">
+          <div className="max-w-6xl mx-auto bg-background rounded-3xl p-8 md:p-12 border border-primary">
+            <div className="flex flex-col md:flex-row items-center lg:gap-20">
+              <div className="flex-shrink-0 ml-10">
                 <FeelyMascot variant="blue" size="lg" speechBubble="Ici Feely" />
               </div>
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                  <FeelingLogoInline />, qu&apos;est-ce que c&apos;est ?
+                  <FeelingLogoInline heightEm={1.4} color="var(--color-primary)" className='mr-0.5'/>
+                   , qu&apos;est-ce que c&apos;est ?
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
                   Feeling, c&apos;est ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 

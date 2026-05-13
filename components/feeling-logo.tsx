@@ -82,7 +82,7 @@ interface FeelingLogoInlineProps {
 /**
  * Logo "feeling" inline, calibré pour s'aligner dans une ligne de texte.
  */
-export function FeelingLogoInline({ color, className, heightEm = 0.75 }: FeelingLogoInlineProps) {
+export function FeelingLogoInline({ color, className, heightEm }: FeelingLogoInlineProps) {
   return (
     <LogoSvg
       style={{
