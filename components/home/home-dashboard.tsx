@@ -426,7 +426,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold mb-4">
-                    <FeelingLogoInline />, qu&apos;est-ce que c&apos;est ?
+                    <FeelingLogoInline heightEm={1.4} />, qu&apos;est-ce que c&apos;est ?
                   </h2>
                   <p className="text-muted-foreground leading-relaxed">
                     Feeling, c&apos;est ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 
