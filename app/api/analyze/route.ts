@@ -153,6 +153,7 @@ export async function POST(request: Request) {
         job_location: jobData.location,
         job_type: jobData.type,
         job_remote: jobData.remote,
+        job_industry: analysis.jobIndustry,
         overall_score: analysis.overallScore,
         personality_score: analysis.personalityScore,
         values_score: analysis.valuesScore,

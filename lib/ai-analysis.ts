@@ -138,6 +138,13 @@ const analysisSchema = z.object({
   personalityScore: z.number().min(0).max(100).describe('Score de compatibilité personnalité'),
   valuesScore: z.number().min(0).max(100).describe('Score de compatibilité valeurs et culture'),
   skillsScore: z.number().min(0).max(100).nullable().describe('Score de compatibilité compétences (null si non évaluable)'),
+
+  jobIndustry: z
+    .string()
+    .nullable()
+    .describe(
+      'Secteur d\'activité de l\'entreprise/poste, inféré depuis la description de l\'offre (ex: "Fintech", "Conseil en stratégie", "SaaS B2B", "Industrie pharmaceutique", "Édition logicielle", "Médias", "Énergie", "Mode et luxe"). En français, 1 à 4 mots, capitalisation propre. Null UNIQUEMENT si la description est trop maigre pour conclure honnêtement.',
+    ),
   
   personalityAnalysis: z.object({
     strengths: z.array(z.string()).describe('Points forts personnalité'),
@@ -645,7 +652,9 @@ STRICT OUTPUT FORMAT CONSTRAINTS (DO NOT IGNORE):
   > overallScore < 40: name explicitly what causes the low score. Provide strategic redirection (company type, role level, contract, geography/remote to target instead). End with ONE concrete action for this week.
 
 - attentionPoints (global list): 1–3 sentences of new global synthesis. No jargon, no rephrasing the listing. No repetition of sub-block content.
-  > overallScore < 40: must end with one concrete and specific action the candidate can take this week.`
+  > overallScore < 40: must end with one concrete and specific action the candidate can take this week.
+
+- jobIndustry: infer the company/job sector from the listing description (company name, vocabulary, products, target market). 1 to 4 words in French, properly capitalized (e.g. "Fintech", "SaaS B2B", "Conseil en stratégie", "Industrie pharmaceutique", "Édition logicielle", "Médias", "Énergie", "Mode et luxe", "Édutech", "E-commerce"). Use a recognized sector label, not a job family. Set to null ONLY if the description is too thin to conclude honestly.`
 
   const { object } = await generateObject({
     model: anthropic('claude-sonnet-4-20250514'),

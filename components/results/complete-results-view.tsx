@@ -16,9 +16,9 @@ import {
   ChevronUp,
   ExternalLink,
   AlertTriangle,
-  Send,
   RefreshCw,
   Sparkles,
+  FileText,
 } from 'lucide-react'
 
 interface Analysis {
@@ -472,19 +472,12 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
 
           {/* Actions finales */}
           <section className="flex flex-col sm:flex-row gap-3 pt-2">
-            {analysis.job_url && (
-              <a
-                href={analysis.job_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1"
-              >
-                <Button className="w-full h-12 bg-foreground text-background hover:bg-foreground/90 font-medium">
-                  <Send className="w-4 h-4 mr-2" />
-                  Postuler à cette offre
-                </Button>
-              </a>
-            )}
+            <Link href={`/kit-candidature/${analysis.id}`} className="flex-1">
+              <Button className="w-full h-12 bg-foreground text-background hover:bg-foreground/90 font-medium">
+                <FileText className="w-4 h-4 mr-2" />
+                Générer mon kit de candidature
+              </Button>
+            </Link>
             <Link href="/accueil" className="flex-1">
               <Button variant="outline" className="w-full h-12 font-medium">
                 <RefreshCw className="w-4 h-4 mr-2" />
