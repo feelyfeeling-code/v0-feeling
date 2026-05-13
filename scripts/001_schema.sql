@@ -12,6 +12,7 @@
 -- ---------------------------------------------------------------------
 drop trigger if exists on_auth_user_created on auth.users;
 
+drop table if exists public.application_kits      cascade;
 drop table if exists public.job_analyses          cascade;
 drop table if exists public.work_experiences      cascade;
 drop table if exists public.technical_skills      cascade;
@@ -318,6 +319,7 @@ create table if not exists public.job_analyses (
   job_location          text,
   job_type              text,
   job_remote            text,
+  job_industry          text,   -- Secteur d'activité inféré par Claude lors de l'analyse
 
   -- Scores (0–100 ; plafonné à 30 si dealbreaker)
   overall_score         integer check (overall_score between 0 and 100),
@@ -354,6 +356,39 @@ create policy "job_analyses_all_own" on public.job_analyses
 drop trigger if exists set_updated_at_job_analyses on public.job_analyses;
 create trigger set_updated_at_job_analyses
   before update on public.job_analyses
+  for each row execute function public.set_updated_at();
+
+-- =====================================================================
+-- 10. application_kits  (1 ligne par (user_id, analysis_id) — CV + LM générés)
+-- =====================================================================
+create table if not exists public.application_kits (
+  id            uuid primary key default uuid_generate_v4(),
+  user_id       uuid not null references auth.users(id) on delete cascade,
+  analysis_id   uuid not null references public.job_analyses(id) on delete cascade,
+
+  -- CV structuré (jsonb) — voir lib/kit/cv-builder.ts pour la forme
+  cv_data       jsonb,
+  -- Lettre de motivation (texte libre, éditable par l'utilisateur)
+  cover_letter  text,
+
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now(),
+
+  unique (user_id, analysis_id)
+);
+
+create index if not exists application_kits_user_id_idx
+  on public.application_kits (user_id, created_at desc);
+
+alter table public.application_kits enable row level security;
+
+drop policy if exists "application_kits_all_own" on public.application_kits;
+create policy "application_kits_all_own" on public.application_kits
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop trigger if exists set_updated_at_application_kits on public.application_kits;
+create trigger set_updated_at_application_kits
+  before update on public.application_kits
   for each row execute function public.set_updated_at();
 
 -- =====================================================================

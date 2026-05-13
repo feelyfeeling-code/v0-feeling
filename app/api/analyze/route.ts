@@ -58,21 +58,44 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get user profiles for analysis
-    const [personalityResult, valuesResult, dreamJobResult, situationResult, academicResult] = await Promise.all([
+    // Get user profiles for analysis. On récupère aussi le profil technique
+    // (skills + expériences) pour intégrer les hard skills dès l'analyse rapide
+    // si l'utilisateur l'a déjà rempli — évite de redemander de compléter.
+    const [
+      personalityResult,
+      valuesResult,
+      dreamJobResult,
+      situationResult,
+      academicResult,
+      skillsResult,
+      experiencesResult,
+    ] = await Promise.all([
       supabase.from('personality_profiles').select('*').eq('user_id', userId).single(),
       supabase.from('values_profiles').select('*').eq('user_id', userId).single(),
       supabase.from('dream_jobs').select('*').eq('user_id', userId).single(),
       supabase.from('current_situations').select('situations, job_search_types').eq('user_id', userId).single(),
       supabase.from('academic_profiles').select('education_level, graduation_date, diploma_name, school_name, field_of_study').eq('user_id', userId).single(),
+      supabase.from('technical_skills').select('skills').eq('user_id', userId).maybeSingle(),
+      supabase
+        .from('work_experiences')
+        .select('job_title, company_name, start_date, end_date, is_current, main_tasks')
+        .eq('user_id', userId)
+        .order('start_date', { ascending: false }),
     ])
-    
+
     if (!personalityResult.data || !valuesResult.data) {
       return NextResponse.json(
         { error: 'Profil incomplet. Complète ton onboarding.' },
         { status: 400 }
       )
     }
+
+    const userSkills = skillsResult.data?.skills ?? []
+    const userExperiences = experiencesResult.data ?? []
+    const hasTechnicalProfile = userSkills.length > 0 || userExperiences.length > 0
+    const technicalProfile = hasTechnicalProfile
+      ? { skills: userSkills, experiences: userExperiences }
+      : null
     
     // Get job data : either by scraping URL, or from manually pasted offer
     let jobData: JobData
@@ -115,6 +138,7 @@ export async function POST(request: Request) {
       dreamJob: dreamJobResult.data,
       currentSituation: situationResult.data,
       academicProfile: academicResult.data ?? null,
+      technicalProfile,
     })
     
     // Save analysis to database
@@ -129,6 +153,7 @@ export async function POST(request: Request) {
         job_location: jobData.location,
         job_type: jobData.type,
         job_remote: jobData.remote,
+        job_industry: analysis.jobIndustry,
         overall_score: analysis.overallScore,
         personality_score: analysis.personalityScore,
         values_score: analysis.valuesScore,
@@ -152,9 +177,10 @@ export async function POST(request: Request) {
       )
     }
     
-    return NextResponse.json({ 
+    return NextResponse.json({
       analysisId: savedAnalysis.id,
-      success: true 
+      hasTechnicalProfile,
+      success: true,
     })
     
   } catch (error) {

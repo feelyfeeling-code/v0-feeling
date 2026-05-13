@@ -11,6 +11,67 @@ export interface JobData {
   rawHtml?: string
 }
 
+const CHROME_HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  Accept:
+    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+  'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+  'Accept-Encoding': 'gzip, deflate, br, zstd',
+  'Cache-Control': 'no-cache',
+  Pragma: 'no-cache',
+  'Sec-Ch-Ua':
+    '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+  'Sec-Ch-Ua-Mobile': '?0',
+  'Sec-Ch-Ua-Platform': '"macOS"',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'none',
+  'Sec-Fetch-User': '?1',
+  'Upgrade-Insecure-Requests': '1',
+  DNT: '1',
+}
+
+const FIREFOX_HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.7; rv:133.0) Gecko/20100101 Firefox/133.0',
+  Accept:
+    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'Accept-Language': 'fr-FR,fr;q=0.8,en-US;q=0.5,en;q=0.3',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Upgrade-Insecure-Requests': '1',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'none',
+  'Sec-Fetch-User': '?1',
+  DNT: '1',
+}
+
+/**
+ * Tente la requête avec un profil Chrome, puis Firefox si l'on se prend
+ * un 403/429. Ajoute aussi un Referer (utile pour Indeed/WTTJ qui vérifient
+ * souvent qu'on arrive depuis le même domaine).
+ */
+async function fetchWithFallback(url: string, origin: string): Promise<Response> {
+  const baseInit: RequestInit = {
+    redirect: 'follow',
+  }
+
+  const first = await fetch(url, {
+    ...baseInit,
+    headers: { ...CHROME_HEADERS, Referer: `${origin}/` },
+  })
+  if (first.ok || (first.status !== 403 && first.status !== 429)) {
+    return first
+  }
+
+  // Deuxième tentative avec un profil différent.
+  return fetch(url, {
+    ...baseInit,
+    headers: { ...FIREFOX_HEADERS, Referer: `${origin}/` },
+  })
+}
+
 /**
  * Scrapes job offer data from various job board URLs.
  *
@@ -25,17 +86,17 @@ export async function scrapeJobOffer(url: string): Promise<JobData> {
   const parsedUrl = new URL(url)
   const hostname = parsedUrl.hostname.toLowerCase()
 
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      Accept:
-        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-    },
-  })
+  // Headers complets pour passer la détection anti-bot basique de certains
+  // sites d'emploi (WTTJ, Indeed…). On essaie d'abord avec un Chrome desktop ;
+  // si le site renvoie 403/429, on retente une fois avec un Firefox.
+  const response = await fetchWithFallback(url, parsedUrl.origin)
 
   if (!response.ok) {
+    console.error('[scraper] non-OK response', {
+      url,
+      status: response.status,
+      statusText: response.statusText,
+    })
     throw new Error(`Failed to fetch: ${response.status}`)
   }
 

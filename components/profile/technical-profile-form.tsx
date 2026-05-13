@@ -1,80 +1,72 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FeelyMascot } from '@/components/feely-mascot'
 import { FeelingLogo } from '@/components/feeling-logo'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { cn } from '@/lib/utils'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Plus, Trash2, X, Sparkles, ArrowRight } from 'lucide-react'
+import { Plus, X, Sparkles, ArrowRight, Briefcase } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  ExperienceCard,
+  emptyExperience,
+  isValidDate,
+  type WorkExperience,
+} from './experience-card'
 
-const MONTHS = [
-  { value: '01', label: 'Janvier' },
-  { value: '02', label: 'Février' },
-  { value: '03', label: 'Mars' },
-  { value: '04', label: 'Avril' },
-  { value: '05', label: 'Mai' },
-  { value: '06', label: 'Juin' },
-  { value: '07', label: 'Juillet' },
-  { value: '08', label: 'Août' },
-  { value: '09', label: 'Septembre' },
-  { value: '10', label: 'Octobre' },
-  { value: '11', label: 'Novembre' },
-  { value: '12', label: 'Décembre' },
-]
-const CURRENT_YEAR = new Date().getFullYear()
-const YEARS = Array.from({ length: 51 }, (_, i) => String(CURRENT_YEAR - i))
-
-/** Extrait "MM" depuis "YYYY-MM", "-MM" (partiel) ou "" */
-const getMonth = (date: string) => date?.split('-')[1] ?? ''
-/** Extrait "YYYY" depuis "YYYY-MM", "YYYY-" (partiel) ou "" */
-const getYear = (date: string) => date?.split('-')[0] ?? ''
-/**
- * Reconstruit la date depuis year + month.
- * Stocke une valeur partielle ("YYYY-" ou "-MM") si l'un des deux manque,
- * afin que le Select correspondant garde sa sélection en attendant l'autre.
- */
-const buildDate = (year: string, month: string) =>
-  year || month ? `${year}-${month}` : ''
-/** Vérifie qu'une date est complète et valide (YYYY-MM) */
-const isValidDate = (date: string) => /^\d{4}-\d{2}$/.test(date)
-
-interface WorkExperience {
-  job_title: string
-  company_name: string
-  location: string
-  start_date: string
-  end_date: string
-  is_current: boolean
-  main_tasks: string
+interface LoadedExperience {
+  id?: string
+  job_title?: string | null
+  company_name?: string | null
+  location?: string | null
+  start_date?: string | null
+  end_date?: string | null
+  is_current?: boolean | null
+  main_tasks?: string | null
 }
 
-const emptyExperience = (): WorkExperience => ({
-  job_title: '',
-  company_name: '',
-  location: '',
-  start_date: '',
-  end_date: '',
-  is_current: false,
-  main_tasks: '',
+interface UIExperience extends WorkExperience {
+  localId: string
+  isNew: boolean
+}
+
+/** Convertit "YYYY-MM-DD" (format Postgres) en "YYYY-MM" attendu par les Selects. */
+const trimDate = (date: string | null | undefined): string => {
+  if (!date) return ''
+  const match = date.match(/^(\d{4}-\d{2})/)
+  return match ? match[1] : ''
+}
+
+const normalizeLoaded = (exp: LoadedExperience): UIExperience => ({
+  localId: exp.id ?? (typeof crypto !== 'undefined' ? crypto.randomUUID() : Math.random().toString(36)),
+  isNew: false,
+  job_title: exp.job_title ?? '',
+  company_name: exp.company_name ?? '',
+  location: exp.location ?? '',
+  start_date: trimDate(exp.start_date),
+  end_date: trimDate(exp.end_date),
+  is_current: !!exp.is_current,
+  main_tasks: exp.main_tasks ?? '',
 })
+
+const toPayload = (list: UIExperience[]): WorkExperience[] =>
+  list
+    .filter(
+      (e) =>
+        e.job_title.trim() &&
+        e.company_name.trim() &&
+        isValidDate(e.start_date) &&
+        !e.isNew // les brouillons non sauvegardés sont exclus
+    )
+    .map(({ localId: _localId, isNew: _isNew, ...rest }) => rest)
 
 interface TechnicalProfileFormProps {
   userId: string
   fromAnalysisId?: string
   initialSkills?: string[]
-  initialExperiences?: WorkExperience[]
+  initialExperiences?: LoadedExperience[]
 }
 
 export function TechnicalProfileForm({
@@ -86,10 +78,21 @@ export function TechnicalProfileForm({
   const router = useRouter()
   const [skills, setSkills] = useState<string[]>(initialSkills)
   const [skillInput, setSkillInput] = useState('')
-  const [experiences, setExperiences] = useState<WorkExperience[]>(
-    initialExperiences.length > 0 ? initialExperiences : [emptyExperience()]
+  const [experiences, setExperiences] = useState<UIExperience[]>(() =>
+    initialExperiences.map(normalizeLoaded)
   )
   const [isSaving, setIsSaving] = useState(false)
+
+  // Suit les cartes en cours d'édition pour avertir avant la sauvegarde globale
+  // (sinon les brouillons locaux des cartes seraient ignorés à la redirection).
+  const editingIdsRef = useRef<Set<string>>(new Set())
+  const handleEditingChange = useCallback(
+    (localId: string, isEditing: boolean) => {
+      if (isEditing) editingIdsRef.current.add(localId)
+      else editingIdsRef.current.delete(localId)
+    },
+    []
+  )
 
   const addSkill = () => {
     const trimmed = skillInput.trim()
@@ -110,25 +113,88 @@ export function TechnicalProfileForm({
     setSkills((prev) => prev.filter((s) => s !== skill))
   }
 
-  const addExperience = () => {
-    setExperiences((prev) => [...prev, emptyExperience()])
+  /** Persiste la liste fournie en base. Retourne true en cas de succès. */
+  const persist = async (
+    nextExperiences: UIExperience[],
+    nextSkills: string[] = skills
+  ): Promise<boolean> => {
+    const res = await fetch('/api/profile/technical', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        skills: nextSkills,
+        experiences: toPayload(nextExperiences),
+      }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error || 'Erreur lors de la sauvegarde')
+    }
+    return true
   }
 
-  const removeExperience = (index: number) => {
-    setExperiences((prev) => prev.filter((_, i) => i !== index))
+  const handleAddExperience = () => {
+    setExperiences((prev) => [
+      ...prev,
+      {
+        ...emptyExperience(),
+        localId:
+          typeof crypto !== 'undefined'
+            ? crypto.randomUUID()
+            : Math.random().toString(36),
+        isNew: true,
+      },
+    ])
   }
 
-  const updateExperience = (index: number, updates: Partial<WorkExperience>) => {
-    setExperiences((prev) =>
-      prev.map((exp, i) => (i === index ? { ...exp, ...updates } : exp))
+  const handleCancelNew = (localId: string) => {
+    setExperiences((prev) => prev.filter((e) => e.localId !== localId))
+    editingIdsRef.current.delete(localId)
+  }
+
+  const handleSaveExperience = async (
+    localId: string,
+    updated: WorkExperience
+  ) => {
+    const next = experiences.map((e) =>
+      e.localId === localId ? { ...e, ...updated, isNew: false } : e
     )
+    try {
+      await persist(next)
+      setExperiences(next)
+      toast.success('Expérience enregistrée')
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Une erreur est survenue'
+      toast.error(message)
+      throw error
+    }
+  }
+
+  const handleDeleteExperience = async (localId: string) => {
+    const next = experiences.filter((e) => e.localId !== localId)
+    try {
+      await persist(next)
+      setExperiences(next)
+      toast.success('Expérience supprimée')
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Une erreur est survenue'
+      toast.error(message)
+      throw error
+    }
   }
 
   const handleSave = async () => {
-    // Validate at least one experience has required fields
-    const filledExperiences = experiences.filter(
-      (e) => e.job_title.trim() && e.company_name.trim() && isValidDate(e.start_date)
-    )
+    if (editingIdsRef.current.size > 0) {
+      toast.warning(
+        "Termine d'enregistrer ou d'annuler tes modifications en cours avant de continuer."
+      )
+      return
+    }
+
+    const filledExperiences = toPayload(experiences)
 
     if (filledExperiences.length === 0 && skills.length === 0) {
       toast.error('Ajoute au moins une compétence ou une expérience.')
@@ -138,19 +204,8 @@ export function TechnicalProfileForm({
     setIsSaving(true)
 
     try {
-      // Save technical profile
-      const saveResponse = await fetch('/api/profile/technical', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, skills, experiences: filledExperiences }),
-      })
+      await persist(experiences, skills)
 
-      if (!saveResponse.ok) {
-        const data = await saveResponse.json()
-        throw new Error(data.error || 'Erreur lors de la sauvegarde')
-      }
-
-      // If coming from an analysis, trigger complete re-analysis
       if (fromAnalysisId) {
         const toastId = toast.loading('Analyse complète en cours...')
 
@@ -163,7 +218,7 @@ export function TechnicalProfileForm({
         if (!analyzeResponse.ok) {
           const data = await analyzeResponse.json()
           toast.dismiss(toastId)
-          throw new Error(data.error || 'Erreur lors de l\'analyse')
+          throw new Error(data.error || "Erreur lors de l'analyse")
         }
 
         toast.success('Analyse complète prête !', { id: toastId })
@@ -262,156 +317,60 @@ export function TechnicalProfileForm({
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-lg">Expériences professionnelles</h2>
-              <Button type="button" variant="outline" size="sm" onClick={addExperience}>
-                <Plus className="w-4 h-4 mr-1" />
-                Ajouter
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {experiences.map((exp, index) => (
-                <div
-                  key={index}
-                  className="rounded-2xl border border-border bg-muted/30 p-5 space-y-4 relative"
+              {experiences.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddExperience}
                 >
-                  {experiences.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeExperience(index)}
-                      className="absolute top-4 right-4 text-muted-foreground hover:text-destructive transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Poste *</label>
-                      <Input
-                        placeholder="Ex : Développeur Frontend"
-                        value={exp.job_title}
-                        onChange={(e) => updateExperience(index, { job_title: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Entreprise *</label>
-                      <Input
-                        placeholder="Ex : Acme Corp"
-                        value={exp.company_name}
-                        onChange={(e) => updateExperience(index, { company_name: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">Lieu</label>
-                    <Input
-                      placeholder="Ex : Paris, Remote"
-                      value={exp.location}
-                      onChange={(e) => updateExperience(index, { location: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Date de début *</label>
-                      <div className="flex gap-1.5">
-                        <Select
-                          value={getMonth(exp.start_date)}
-                          onValueChange={(m) =>
-                            updateExperience(index, { start_date: buildDate(getYear(exp.start_date), m) })
-                          }
-                        >
-                          <SelectTrigger className="flex-1 h-10">
-                            <SelectValue placeholder="Mois" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {MONTHS.map((m) => (
-                              <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Select
-                          value={getYear(exp.start_date)}
-                          onValueChange={(y) =>
-                            updateExperience(index, { start_date: buildDate(y, getMonth(exp.start_date)) })
-                          }
-                        >
-                          <SelectTrigger className="flex-1 h-10">
-                            <SelectValue placeholder="Année" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {YEARS.map((y) => (
-                              <SelectItem key={y} value={y}>{y}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Date de fin</label>
-                      <div className={cn('flex gap-1.5', exp.is_current && 'opacity-50 pointer-events-none')}>
-                        <Select
-                          value={getMonth(exp.end_date)}
-                          disabled={exp.is_current}
-                          onValueChange={(m) =>
-                            updateExperience(index, { end_date: buildDate(getYear(exp.end_date), m) })
-                          }
-                        >
-                          <SelectTrigger className="flex-1 h-10">
-                            <SelectValue placeholder="Mois" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {MONTHS.map((m) => (
-                              <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Select
-                          value={getYear(exp.end_date)}
-                          disabled={exp.is_current}
-                          onValueChange={(y) =>
-                            updateExperience(index, { end_date: buildDate(y, getMonth(exp.end_date)) })
-                          }
-                        >
-                          <SelectTrigger className="flex-1 h-10">
-                            <SelectValue placeholder="Année" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {YEARS.map((y) => (
-                              <SelectItem key={y} value={y}>{y}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={exp.is_current}
-                      onChange={(e) =>
-                        updateExperience(index, { is_current: e.target.checked, end_date: '' })
-                      }
-                      className="w-4 h-4 rounded"
-                    />
-                    <span className="text-sm">Poste actuel</span>
-                  </label>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-muted-foreground">Missions principales</label>
-                    <Textarea
-                      placeholder="Décris tes principales responsabilités et réalisations..."
-                      value={exp.main_tasks}
-                      onChange={(e) => updateExperience(index, { main_tasks: e.target.value })}
-                      rows={3}
-                      className="resize-none"
-                    />
-                  </div>
-                </div>
-              ))}
+                  <Plus className="w-4 h-4 mr-1" />
+                  Ajouter une expérience
+                </Button>
+              )}
             </div>
+
+            {experiences.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-8 text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
+                  <Briefcase className="w-5 h-5 text-foreground" />
+                </div>
+                <div className="space-y-1">
+                  <p className="font-medium text-sm">Pas encore d&apos;expérience renseignée</p>
+                  <p className="text-xs text-muted-foreground">
+                    Ajoute ta première expérience pour affiner ton analyse.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddExperience}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Ajouter une expérience
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {experiences.map((exp) => {
+                  const { localId, isNew, ...data } = exp
+                  return (
+                    <ExperienceCard
+                      key={localId}
+                      experience={data}
+                      isNew={isNew}
+                      onSave={(updated) => handleSaveExperience(localId, updated)}
+                      onDelete={() => handleDeleteExperience(localId)}
+                      onCancelNew={() => handleCancelNew(localId)}
+                      onEditingChange={(isEditing) =>
+                        handleEditingChange(localId, isEditing)
+                      }
+                    />
+                  )
+                })}
+              </div>
+            )}
           </section>
 
           {/* CTA */}

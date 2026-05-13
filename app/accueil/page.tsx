@@ -27,16 +27,35 @@ export default async function AccueilPage() {
     redirect('/onboarding')
   }
   
-  // Get user's previous analyses + daily count
-  const [analysesResult, { count: dailyCount }] = await Promise.all([
-    supabase
-      .from('job_analyses')
-      .select('id, job_title, company_name, overall_score, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(5),
-    checkDailyAnalysisLimit(supabase, user.id),
-  ])
+  // Get user's previous analyses + daily count + technical profile state.
+  // hasTechnicalProfile sert à savoir si l'analyse rapide intégrera déjà les
+  // hard skills (et donc à rediriger directement vers /resultats-complets).
+  const [analysesResult, { count: dailyCount }, skillsResult, experienceResult] =
+    await Promise.all([
+      supabase
+        .from('job_analyses')
+        .select(
+          'id, job_title, company_name, personality_score, values_score, skills_score, has_dealbreakers, created_at'
+        )
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5),
+      checkDailyAnalysisLimit(supabase, user.id),
+      supabase
+        .from('technical_skills')
+        .select('skills')
+        .eq('user_id', user.id)
+        .maybeSingle(),
+      supabase
+        .from('work_experiences')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1),
+    ])
+
+  const hasTechnicalProfile =
+    (skillsResult.data?.skills?.length ?? 0) > 0 ||
+    (experienceResult.data?.length ?? 0) > 0
 
   const firstName = profile?.first_name || user.user_metadata?.first_name || 'toi'
 
@@ -47,6 +66,7 @@ export default async function AccueilPage() {
       recentAnalyses={analysesResult.data || []}
       dailyAnalysisCount={dailyCount}
       dailyAnalysisLimit={DAILY_ANALYSIS_LIMIT}
+      hasTechnicalProfile={hasTechnicalProfile}
     />
   )
 }

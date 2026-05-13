@@ -10,6 +10,7 @@ import { FeelyMascot } from '@/components/feely-mascot'
 import { Footer } from '@/components/footer'
 import { WelcomePopup } from './welcome-popup'
 import { Link2, ArrowRight, Clock, Building2, Sparkles, FileText } from 'lucide-react'
+import { computeOverallScore } from '@/lib/score'
 import { Textarea } from '@/components/ui/textarea'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -41,7 +42,10 @@ interface RecentAnalysis {
   id: string
   job_title: string
   company_name: string
-  overall_score: number
+  personality_score: number
+  values_score: number
+  skills_score: number | null
+  has_dealbreakers: boolean
   created_at: string
 }
 
@@ -51,9 +55,10 @@ interface HomeDashboardProps {
   recentAnalyses: RecentAnalysis[]
   dailyAnalysisCount: number
   dailyAnalysisLimit: number
+  hasTechnicalProfile: boolean
 }
 
-export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysisCount, dailyAnalysisLimit }: HomeDashboardProps) {
+export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysisCount, dailyAnalysisLimit, hasTechnicalProfile }: HomeDashboardProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [jobUrl, setJobUrl] = useState('')
@@ -133,7 +138,14 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
         throw new Error(data.error || 'Erreur lors de l\'analyse')
       }
 
-      router.push(`/resultats/${data.analysisId}`)
+      // Si le profil technique est rempli, /api/analyze a déjà intégré les
+      // hard skills → on saute la vue rapide et on va sur les résultats complets.
+      const includesSkills = data.hasTechnicalProfile ?? hasTechnicalProfile
+      router.push(
+        includesSkills
+          ? `/resultats-complets/${data.analysisId}`
+          : `/resultats/${data.analysisId}`
+      )
     } catch (error) {
       console.error('Analysis error:', error)
       toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'analyse')
@@ -220,10 +232,17 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
       <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <FeelingLogo size="md" />
-          
-          <Button variant="outline" onClick={handleSignOut}>
-            Déconnexion
-          </Button>
+
+          <div className="flex items-center gap-2">
+            <Link href="/profil">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+                Mon profil
+              </Button>
+            </Link>
+            <Button variant="outline" onClick={handleSignOut}>
+              Déconnexion
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -472,7 +491,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                 {recentAnalyses.map((analysis) => (
                   <Link
                     key={analysis.id}
-                    href={`/resultats/${analysis.id}`}
+                    href={`/resultats-complets/${analysis.id}`}
                     className="bg-background rounded-xl p-6 border border-border hover:border-primary/50 transition-colors flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-4">
@@ -489,7 +508,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                     
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <div className="text-2xl font-bold">{analysis.overall_score}%</div>
+                        <div className="text-2xl font-bold">{computeOverallScore(analysis)}%</div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />
                           {new Date(analysis.created_at).toLocaleDateString('fr-FR')}
