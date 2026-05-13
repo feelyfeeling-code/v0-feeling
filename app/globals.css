@@ -13,15 +13,15 @@
   --primary-foreground: oklch(0.145 0 0);
   
   /* Peach - Secondary */
-  --secondary: oklch(0.92 0.06 70); /* #FFE8D6 peach */
+  --secondary: #FEE831;
   --secondary-foreground: oklch(0.145 0 0);
   
   /* Mint - Accent/Success */
-  --accent: oklch(0.88 0.1 155); /* #A8F0C6 mint green */
+  --accent: #75DA9F; /* #A8F0C6 mint green */
   --accent-foreground: oklch(0.145 0 0);
   
   /* Blue - Info/Feely mascot */
-  --info: oklch(0.82 0.1 240); /* #B8D4F0 light blue */
+  --info: #99BAF8; /* #B8D4F0 light blue */
   --info-foreground: oklch(0.145 0 0);
   
   /* Yellow - Warning/Attention */

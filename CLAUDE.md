@@ -66,7 +66,7 @@ No test suite is configured.
 
 Tailwind CSS 4.2 with OKLCh color tokens:
 - Primary (lavender): `#D4C4FB`
-- Secondary (peach): `#FFE8D6`
+- Secondary (Yellow): `#FEE831`
 - Accent (mint): `#A8F0C6`
 
 Fonts: DM Sans (body), Fraunces (headings/serif), Geist Mono (code).

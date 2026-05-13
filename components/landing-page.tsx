@@ -105,19 +105,19 @@ export function LandingPage() {
       {/* How it Works Section */}
       <section id="comment-ca-marche" className="py-20 scroll-mt-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+          <h2 className="text-3xl text-center font-bold t mb-16">
             Comment ça marche ?
           </h2>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Step 1 */}
             <div className="relative">
-              <div className="bg-secondary rounded-2xl p-6 h-full">
+              <div className="bg-secondary rounded-2xl p-6 h-60 ">
                 <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
                   1
                 </div>
                 <h3 className="text-xl font-bold mb-3">On a appris à te connaître</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p className="text-foreground text-sm leading-relaxed">
                   Tu as répondu à quelques questions sur ta personnalité, tes valeurs et 
                   tes ambitions. Pas ton CV, toi. Et c&apos;est là que tout commence.
                 </p>
@@ -125,13 +125,13 @@ export function LandingPage() {
             </div>
             
             {/* Step 2 */}
-            <div className="relative md:mt-12">
-              <div className="bg-primary/30 rounded-2xl p-6 h-full">
+            <div className="relative">
+              <div className="bg-info rounded-2xl p-6 h-60 mt-8">
                 <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
                   2
                 </div>
                 <h3 className="text-xl font-bold mb-3">Tu testes une offre</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p className="text-foreground text-sm leading-relaxed">
                   Colle le lien d&apos;une offre qui t&apos;intéresse. Feely analyse si elle te 
                   ressemble vraiment.
                 </p>
@@ -139,20 +139,18 @@ export function LandingPage() {
             </div>
             
             {/* Step 3 */}
-            <div className="relative md:mt-24">
-              <div className="bg-accent/30 rounded-2xl p-6 h-full">
+            <div className="relative">
+              <div className="bg-accent rounded-2xl p-6 h-60 mt-16">
                 <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
                   3
                 </div>
                 <h3 className="text-xl font-bold mb-3">Tu vois les résultats</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
+                <p className="text-foreground text-sm leading-relaxed">
                   Tu verras si cette offre te ressemble vraiment sur ta personnalité, la 
                   culture de l&apos;entreprise et tes compétences.
                 </p>
-                <div className="flex gap-2 mt-4">
-                  <CheckCircle2 className="w-6 h-6 text-accent-foreground" />
-                  <CheckCircle2 className="w-6 h-6 text-accent-foreground" />
-                  <div className="w-6 h-6 rounded border-2 border-muted-foreground/30" />
+                <div className="relative mt-6 place-self-end">
+                  <img src="/cases.svg"  />
                 </div>
               </div>
             </div>
