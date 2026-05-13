@@ -415,7 +415,48 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
             </div>
           </div>
         </section>
-
+    {/* Recent analyses */}
+        {recentAnalyses.length > 0 && (
+          <section className="py-12 bg-muted/30">
+            <div className="container mx-auto px-4">
+              <h2 className="text-2xl font-bold mb-8">Tes dernières analyses</h2>
+              
+              <div className="grid gap-4">
+                {recentAnalyses.map((analysis) => (
+                  <Link
+                    key={analysis.id}
+                    href={`/resultats-complets/${analysis.id}`}
+                    className="bg-background rounded-xl p-6 border border-border hover:border-primary/50 transition-colors flex items-center justify-between group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                        <Building2 className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium group-hover:text-primary transition-colors">
+                          {analysis.job_title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">{analysis.company_name}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="text-2xl font-bold">{computeOverallScore(analysis)}%</div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          {new Date(analysis.created_at).toLocaleDateString('fr-FR')}
+                        </div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+        
         {/* What is Feeling section */}
         <section className="py-12 bg-muted/30">
           <div className="container mx-auto px-4">
@@ -481,47 +522,6 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
           </div>
         </section>
 
-        {/* Recent analyses */}
-        {recentAnalyses.length > 0 && (
-          <section className="py-12 bg-muted/30">
-            <div className="container mx-auto px-4">
-              <h2 className="text-2xl font-bold mb-8">Tes dernières analyses</h2>
-              
-              <div className="grid gap-4">
-                {recentAnalyses.map((analysis) => (
-                  <Link
-                    key={analysis.id}
-                    href={`/resultats-complets/${analysis.id}`}
-                    className="bg-background rounded-xl p-6 border border-border hover:border-primary/50 transition-colors flex items-center justify-between group"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium group-hover:text-primary transition-colors">
-                          {analysis.job_title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">{analysis.company_name}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <div className="text-2xl font-bold">{computeOverallScore(analysis)}%</div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          {new Date(analysis.created_at).toLocaleDateString('fr-FR')}
-                        </div>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
       </main>
 
       {/* DEV ONLY — panneau de mock analyse */}
