@@ -1,98 +1,99 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { FeelyMascot } from '@/components/feely-mascot'
-import { FeelingLogo } from '@/components/feeling-logo'
-import { X, ArrowRight, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FeelyMascot } from "@/components/feely-mascot";
+import { FeelingLogo } from "@/components/feeling-logo";
+import { X, ArrowRight, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 
-type Step = 1 | 2
+type Step = 1 | 2;
 
 export function SignupForm() {
-  const router = useRouter()
-  const [step, setStep] = useState<Step>(1)
-  const [isLoading, setIsLoading] = useState(false)
-  
+  const router = useRouter();
+  const [step, setStep] = useState<Step>(1);
+  const [isLoading, setIsLoading] = useState(false);
+
   // Step 1: Basic info
-  const [firstName, setFirstName] = useState('')
-  const [email, setEmail] = useState('')
-  
+  const [firstName, setFirstName] = useState("");
+  const [email, setEmail] = useState("");
+
   // Step 2: Password & consents
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [acceptTerms, setAcceptTerms] = useState(false)
-  const [acceptNewsletter, setAcceptNewsletter] = useState(false)
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptNewsletter, setAcceptNewsletter] = useState(false);
 
   const handleStep1 = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!firstName.trim()) {
-      toast.error('Ton prénom est requis')
-      return
+      toast.error("Ton prénom est requis");
+      return;
     }
     if (!email.trim()) {
-      toast.error('Ton email est requis')
-      return
+      toast.error("Ton email est requis");
+      return;
     }
-    setStep(2)
-  }
+    setStep(2);
+  };
 
   const handleStep2 = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (password.length < 8) {
-      toast.error('Le mot de passe doit contenir au moins 8 caractères')
-      return
+      toast.error("Le mot de passe doit contenir au moins 8 caractères");
+      return;
     }
-    
+
     if (password !== confirmPassword) {
-      toast.error('Les mots de passe ne correspondent pas')
-      return
+      toast.error("Les mots de passe ne correspondent pas");
+      return;
     }
-    
+
     if (!acceptTerms) {
-      toast.error('Tu dois accepter les conditions d\'utilisation')
-      return
+      toast.error("Tu dois accepter les conditions d'utilisation");
+      return;
     }
-    
-    setIsLoading(true)
-    
-    const supabase = createClient()
+
+    setIsLoading(true);
+
+    const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? 
+        emailRedirectTo:
+          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
           `${window.location.origin}/auth/callback`,
         data: {
           first_name: firstName,
           accept_newsletter: acceptNewsletter,
         },
       },
-    })
+    });
 
     if (error) {
-      toast.error(error.message)
-      setIsLoading(false)
-      return
+      toast.error(error.message);
+      setIsLoading(false);
+      return;
     }
 
-    toast.success('Compte créé ! Bienvenue sur Feeling.')
-    router.push('/onboarding')
-  }
+    toast.success("Compte créé ! Bienvenue sur Feeling.");
+    router.push("/onboarding");
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md relative">
         {/* Close button */}
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="absolute -top-12 left-0 p-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <X className="w-6 h-6" />
@@ -100,17 +101,19 @@ export function SignupForm() {
 
         {/* Progress indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className={`w-3 h-3 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-muted'}`} />
-          <div className={`w-3 h-3 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`} />
+          <div
+            className={`w-3 h-3 rounded-full ${step >= 1 ? "bg-primary" : "bg-muted"}`}
+          />
+          <div
+            className={`w-3 h-3 rounded-full ${step >= 2 ? "bg-primary" : "bg-muted"}`}
+          />
         </div>
 
         {step === 1 ? (
           <div className="flex flex-col items-center">
             <FeelyMascot variant="blue" size="lg" className="mb-6" />
-            
-            <h1 className="text-3xl font-bold text-center mb-2">
-              Bienvenue !
-            </h1>
+
+            <h1 className="text-3xl font-bold text-center mb-2">Bienvenue !</h1>
             <p className="text-center text-muted-foreground mb-8">
               Créons ton compte ensemble
             </p>
@@ -154,7 +157,9 @@ export function SignupForm() {
             {/* Divider */}
             <div className="flex items-center gap-4 w-full my-6">
               <div className="flex-1 h-px bg-border" />
-              <span className="text-sm text-muted-foreground">Déjà un compte ?</span>
+              <span className="text-sm text-muted-foreground">
+                Déjà un compte ?
+              </span>
               <div className="flex-1 h-px bg-border" />
             </div>
 
@@ -169,7 +174,7 @@ export function SignupForm() {
         ) : (
           <div className="flex flex-col items-center">
             <FeelingLogo size="lg" className="mb-6" asLink={false} />
-            
+
             <h1 className="text-2xl font-bold text-center mb-2">
               Parfait {firstName} !
             </h1>
@@ -193,7 +198,9 @@ export function SignupForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirme ton mot de passe :</Label>
+                <Label htmlFor="confirmPassword">
+                  Confirme ton mot de passe :
+                </Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -210,15 +217,28 @@ export function SignupForm() {
                   <Checkbox
                     id="terms"
                     checked={acceptTerms}
-                    onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setAcceptTerms(checked as boolean)
+                    }
                   />
-                  <Label htmlFor="terms" className="block text-sm leading-relaxed cursor-pointer">
-                    J&apos;accepte les{' '}
-                    <Link href="/cgu" className="text-primary hover:underline" target="_blank">
+                  <Label
+                    htmlFor="terms"
+                    className="block text-sm leading-relaxed cursor-pointer"
+                  >
+                    J&apos;accepte les{" "}
+                    <Link
+                      href="/cgu"
+                      className="text-primary hover:underline"
+                      target="_blank"
+                    >
                       conditions générales d&apos;utilisation
-                    </Link>{' '}
-                    et la{' '}
-                    <Link href="/confidentialite" className="text-primary hover:underline" target="_blank">
+                    </Link>{" "}
+                    et la{" "}
+                    <Link
+                      href="/confidentialite"
+                      className="text-primary hover:underline"
+                      target="_blank"
+                    >
                       politique de confidentialité
                     </Link>
                   </Label>
@@ -239,7 +259,7 @@ export function SignupForm() {
                   disabled={isLoading}
                   className="flex-1 h-14 bg-foreground text-background hover:bg-foreground/90 text-lg font-medium"
                 >
-                  {isLoading ? 'Création...' : 'Créer mon compte'}
+                  {isLoading ? "Création..." : "Créer mon compte"}
                 </Button>
               </div>
             </form>
@@ -247,5 +267,5 @@ export function SignupForm() {
         )}
       </div>
     </div>
-  )
+  );
 }

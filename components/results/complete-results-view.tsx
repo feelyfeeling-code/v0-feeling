@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { FeelyMascot } from '@/components/feely-mascot'
-import { FeelingLogo } from '@/components/feeling-logo'
-import { Footer } from '@/components/footer'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { computeOverallScore } from '@/lib/score'
-import { toast } from 'sonner'
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { FeelyMascot } from "@/components/feely-mascot";
+import { FeelingLogo } from "@/components/feeling-logo";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { computeOverallScore } from "@/lib/score";
+import { toast } from "sonner";
 import {
   ChevronDown,
   ChevronUp,
@@ -19,33 +19,33 @@ import {
   RefreshCw,
   Sparkles,
   FileText,
-} from 'lucide-react'
+} from "lucide-react";
 
 interface Analysis {
-  id: string
-  job_title: string
-  company_name: string
-  job_location: string
-  job_type: string
-  job_remote: string
-  job_url: string
-  overall_score: number
-  personality_score: number
-  values_score: number
-  skills_score: number | null
-  personality_analysis: { strengths: string[]; attentionPoints: string[] }
-  values_analysis: { strengths: string[]; attentionPoints: string[] }
-  skills_analysis: { strengths: string[]; attentionPoints: string[] } | null
-  strengths: string[]
-  attention_points: string[]
-  has_dealbreakers: boolean
-  dealbreaker_details: string[] | null
+  id: string;
+  job_title: string;
+  company_name: string;
+  job_location: string;
+  job_type: string;
+  job_remote: string;
+  job_url: string;
+  overall_score: number;
+  personality_score: number;
+  values_score: number;
+  skills_score: number | null;
+  personality_analysis: { strengths: string[]; attentionPoints: string[] };
+  values_analysis: { strengths: string[]; attentionPoints: string[] };
+  skills_analysis: { strengths: string[]; attentionPoints: string[] } | null;
+  strengths: string[];
+  attention_points: string[];
+  has_dealbreakers: boolean;
+  dealbreaker_details: string[] | null;
 }
 
 interface CompleteResultsViewProps {
-  analysis: Analysis
-  userId: string
-  hasTechnicalProfile: boolean
+  analysis: Analysis;
+  userId: string;
+  hasTechnicalProfile: boolean;
 }
 
 /**
@@ -54,36 +54,79 @@ interface CompleteResultsViewProps {
  * Sinon on affiche la valeur telle quelle.
  */
 function formatRecapField(label: string, value: string): string {
-  return value.trim().toLowerCase() === 'non spécifié'
+  return value.trim().toLowerCase() === "non spécifié"
     ? `${label} : non spécifié`
-    : value
+    : value;
 }
 
 // US 15.1 : verdict précis sur 3 niveaux.
 function getVerdict(score: number): {
-  label: 'Fort potentiel' | 'Match partiel' | 'Faible adéquation'
-  tone: 'strong' | 'partial' | 'weak'
-  headline: string
+  label: "Bon feeling" | "Match partiel" | "Feeling faible";
+  tone: "strong" | "partial" | "weak";
+  headline: string;
 } {
+  if (score >= 80) {
+    return {
+      label: "Bon feeling",
+      tone: "strong",
+      headline:
+        "Il y a un vrai bon feeling ici. Cette offre mérite clairement une candidature.",
+    };
+  }
+  if (score >= 75) {
+    return {
+      label: "Bon feeling",
+      tone: "strong",
+      headline:
+        "Ton profil a de vrais points solides pour cette offre. Ça vaut le coup de candidater.",
+    };
+  }
   if (score >= 70) {
     return {
-      label: 'Fort potentiel',
-      tone: 'strong',
-      headline: 'Super feeling sur le profil complet',
-    }
+      label: "Bon feeling",
+      tone: "strong",
+      headline:
+        "Cette offre semble vraiment alignée avec ce que tu recherches. Tu devrais postuler.",
+    };
+  }
+  if (score >= 60) {
+    return {
+      label: "Match partiel",
+      tone: "partial",
+      headline:
+        "Il y a une base intéressante ici. Quelques points méritent ton attention avant de postuler.",
+    };
+  }
+  if (score >= 50) {
+    return {
+      label: "Match partiel",
+      tone: "partial",
+      headline:
+        "Cette offre peut se tenter, mais certains éléments risquent de créer un écart.",
+    };
   }
   if (score >= 40) {
     return {
-      label: 'Match partiel',
-      tone: 'partial',
-      headline: 'Bon feeling mais points à travailler',
-    }
+      label: "Match partiel",
+      tone: "partial",
+      headline:
+        "Le match reste partiel pour l’instant. Il faudra bien cibler ta candidature.",
+    };
+  }
+  if (score >= 30) {
+    return {
+      label: "Feeling faible",
+      tone: "weak",
+      headline:
+        "Il y’a quelques écarts importants entre les attentes du poste et ton profil actuel.",
+    };
   }
   return {
-    label: 'Faible adéquation',
-    tone: 'weak',
-    headline: 'Cette offre colle peu avec ton profil',
-  }
+    label: "Feeling faible",
+    tone: "weak",
+    headline:
+      "Cette offre ne semble pas vraiment alignée avec ce qui valorise ton profil.",
+  };
 }
 
 // Badge circulaire avec score et mascot.
@@ -99,12 +142,12 @@ function BigScoreBadge({ score }: { score: number }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Barre dégradée rouge → jaune → vert avec curseur au score.
 function GradientBar({ score }: { score: number }) {
-  const clamped = Math.max(0, Math.min(100, score))
+  const clamped = Math.max(0, Math.min(100, score));
   return (
     <div className="relative w-full max-w-md mx-auto">
       <div className="h-3 rounded-full bg-gradient-to-r from-red-400 via-yellow-300 to-green-400" />
@@ -114,7 +157,7 @@ function GradientBar({ score }: { score: number }) {
         aria-hidden
       />
     </div>
-  )
+  );
 }
 
 // Carte "section" dépliable (ouverte par défaut).
@@ -124,12 +167,12 @@ function SectionCard({
   strengths,
   attentionPoints,
 }: {
-  title: string
-  score: number
-  strengths: string[]
-  attentionPoints: string[]
+  title: string;
+  score: number;
+  strengths: string[];
+  attentionPoints: string[];
 }) {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(true);
 
   return (
     <div className="rounded-2xl border border-primary/30 bg-primary/5 overflow-hidden">
@@ -175,90 +218,97 @@ function SectionCard({
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: CompleteResultsViewProps) {
-  const router = useRouter()
-  const [isMockCompleting, setIsMockCompleting] = useState(false)
-  const [isAnalyzingSkills, setIsAnalyzingSkills] = useState(false)
+export function CompleteResultsView({
+  analysis,
+  userId,
+  hasTechnicalProfile,
+}: CompleteResultsViewProps) {
+  const router = useRouter();
+  const [isMockCompleting, setIsMockCompleting] = useState(false);
+  const [isAnalyzingSkills, setIsAnalyzingSkills] = useState(false);
 
   // Pour les analyses antérieures (skills_score = null) où l'utilisateur a
   // déjà rempli son profil technique : on déclenche /api/analyze-complete
   // directement, sans repasser par le formulaire de profil.
   const handleAnalyzeSkills = async () => {
-    setIsAnalyzingSkills(true)
-    const toastId = toast.loading('Analyse des compétences en cours...')
+    setIsAnalyzingSkills(true);
+    const toastId = toast.loading("Analyse des compétences en cours...");
     try {
-      const response = await fetch('/api/analyze-complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/analyze-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ analysisId: analysis.id, userId }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Erreur lors de l\'analyse')
-      toast.success('Analyse complète prête !', { id: toastId })
-      router.refresh()
+      });
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.error || "Erreur lors de l'analyse");
+      toast.success("Analyse complète prête !", { id: toastId });
+      router.refresh();
     } catch (error) {
-      toast.dismiss(toastId)
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'analyse')
-      setIsAnalyzingSkills(false)
+      toast.dismiss(toastId);
+      toast.error(
+        error instanceof Error ? error.message : "Erreur lors de l'analyse",
+      );
+      setIsAnalyzingSkills(false);
     }
-  }
+  };
 
   const handleMockComplete = async () => {
-    setIsMockCompleting(true)
+    setIsMockCompleting(true);
     try {
-      const response = await fetch('/api/dev/mock-complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/dev/mock-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ analysisId: analysis.id, userId }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error)
-      router.refresh()
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      router.refresh();
     } catch (error) {
-      console.error(error)
-      setIsMockCompleting(false)
+      console.error(error);
+      setIsMockCompleting(false);
     }
-  }
+  };
 
   // US 15.1 : pondération 50% soft (personnalité + valeurs) + 50% hard (compétences).
   // Soft = moyenne simple des deux dimensions soft ; Hard = skills_score.
-  const hasSkills = analysis.skills_score !== null
+  const hasSkills = analysis.skills_score !== null;
   const softScore = Math.round(
     (analysis.personality_score + analysis.values_score) / 2,
-  )
-  const hardScore = analysis.skills_score ?? 0
+  );
+  const hardScore = analysis.skills_score ?? 0;
   const effectiveOverall = computeOverallScore({
     personality_score: analysis.personality_score,
     values_score: analysis.values_score,
     skills_score: analysis.skills_score,
     has_dealbreakers: analysis.has_dealbreakers,
-  })
+  });
 
-  const verdict = getVerdict(effectiveOverall)
+  const verdict = getVerdict(effectiveOverall);
 
   const handleSignOut = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
-  }
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   const verdictBadgeClass =
-    verdict.tone === 'strong'
-      ? 'bg-accent/30 text-foreground'
-      : verdict.tone === 'partial'
-        ? 'bg-primary/30 text-foreground'
-        : 'bg-destructive/10 text-destructive'
+    verdict.tone === "strong"
+      ? "bg-accent/30 text-foreground"
+      : verdict.tone === "partial"
+        ? "bg-primary/30 text-foreground"
+        : "bg-destructive/10 text-destructive";
 
   // US 15.2 : explication = 2-3 phrases depuis strengths[] (générées par l'IA
   // avec contraintes : 1 élément profil + 1 élément offre, action concrète si score faible).
   const matchExplanation =
     analysis.strengths && analysis.strengths.length > 0
       ? analysis.strengths
-      : []
+      : [];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -284,8 +334,8 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
             <div className="container mx-auto px-4 py-3 flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
               <p className="text-sm text-destructive font-medium">
-                Critère rédhibitoire détecté :{' '}
-                {analysis.dealbreaker_details?.join(', ') ?? 'non spécifié'}.
+                Critère rédhibitoire détecté :{" "}
+                {analysis.dealbreaker_details?.join(", ") ?? "non spécifié"}.
                 Score global plafonné à 30/100.
               </p>
             </div>
@@ -295,32 +345,36 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
         <div className="container mx-auto px-4 py-10 max-w-4xl space-y-8">
           {/* Titre */}
           <h1 className="text-3xl md:text-4xl font-extrabold">
-            Ton feeling complet avec cette offre
+            Le feeling entre toi et cette offre
           </h1>
 
           {/* Récapitulatif de l'offre */}
           <section className="space-y-3">
-            <h2 className="font-bold">Récapitulatif de l&apos;offre :</h2>
+            <h2 className="font-bold">
+              Récapitulatif de la fiche d&apos;emploi :
+            </h2>
             <div className="flex flex-wrap gap-2">
               {(analysis.job_title || analysis.company_name) && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
                   {analysis.job_title}
-                  {analysis.company_name ? ` chez ${analysis.company_name}` : ''}
+                  {analysis.company_name
+                    ? ` chez ${analysis.company_name}`
+                    : ""}
                 </span>
               )}
               {analysis.job_type && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {formatRecapField('Contrat', analysis.job_type)}
+                  {formatRecapField("Contrat", analysis.job_type)}
                 </span>
               )}
               {analysis.job_location && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {formatRecapField('Lieu', analysis.job_location)}
+                  {formatRecapField("Lieu", analysis.job_location)}
                 </span>
               )}
               {analysis.job_remote && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {formatRecapField('Télétravail', analysis.job_remote)}
+                  {formatRecapField("Télétravail", analysis.job_remote)}
                 </span>
               )}
               {analysis.job_url && (
@@ -344,7 +398,7 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
             <div className="flex flex-col items-center gap-3">
               <span
                 className={cn(
-                  'inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold',
+                  "inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold",
                   verdictBadgeClass,
                 )}
               >
@@ -352,10 +406,10 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
               </span>
               <p
                 className={cn(
-                  'text-xl md:text-2xl font-extrabold text-center',
-                  verdict.tone === 'strong' && 'text-accent-foreground',
-                  verdict.tone === 'partial' && 'text-primary',
-                  verdict.tone === 'weak' && 'text-destructive',
+                  "text-xl md:text-2xl font-extrabold text-center",
+                  verdict.tone === "strong" && "text-accent-foreground",
+                  verdict.tone === "partial" && "text-primary",
+                  verdict.tone === "weak" && "text-destructive",
                 )}
               >
                 {verdict.headline}
@@ -375,7 +429,7 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
             <div className="rounded-2xl bg-accent/20 border border-accent/30 p-4 text-center">
               <p className="text-xs text-muted-foreground mb-1">Hard skills</p>
               <p className="text-3xl font-extrabold">
-                {hasSkills ? `${hardScore}%` : '–'}
+                {hasSkills ? `${hardScore}%` : "–"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Compétences + Expériences
@@ -426,7 +480,8 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
                   <p className="font-bold text-sm">Compétences</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Tes compétences n&apos;ont pas encore été comparées à cette
-                    offre. Lance l&apos;analyse pour obtenir ton score hard skills.
+                    offre. Lance l&apos;analyse pour obtenir ton score hard
+                    skills.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -442,11 +497,15 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
                         Analyse en cours...
                       </>
                     ) : (
-                      'Lancer l\'analyse des compétences'
+                      "Lancer l'analyse des compétences"
                     )}
                   </Button>
                   <Link href={`/profil-technique?from=${analysis.id}`}>
-                    <Button size="sm" variant="ghost" className="w-full text-xs">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-full text-xs"
+                    >
                       Modifier mon profil avant
                     </Button>
                   </Link>
@@ -457,8 +516,8 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
                 <div>
                   <p className="font-bold text-sm">Compétences</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Score non disponible — ton profil technique n&apos;a pas encore
-                    été analysé.
+                    Score non disponible — ton profil technique n&apos;a pas
+                    encore été analysé.
                   </p>
                 </div>
                 <Link href={`/profil-technique?from=${analysis.id}`}>
@@ -479,7 +538,10 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
               </Button>
             </Link>
             <Link href="/accueil" className="flex-1">
-              <Button variant="outline" className="w-full h-12 font-medium">
+              <Button
+                variant="outline"
+                className="w-full h-12 font-medium hover:bg-[#CCB8FF] hover:text-foreground hover:border-[#CCB8FF] transition-colors"
+              >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Tester une nouvelle offre
               </Button>
@@ -489,20 +551,24 @@ export function CompleteResultsView({ analysis, userId, hasTechnicalProfile }: C
       </main>
 
       {/* DEV ONLY — mock complete si pas de skills */}
-      {process.env.NODE_ENV === 'development' && !hasSkills && (
+      {process.env.NODE_ENV === "development" && !hasSkills && (
         <div className="fixed bottom-4 right-4 z-50 bg-yellow-100 border-2 border-yellow-400 rounded-2xl p-4 shadow-xl max-w-xs">
-          <p className="text-xs font-bold text-yellow-800 mb-3 uppercase tracking-wide">⚙️ Dev — Finaliser le mock</p>
+          <p className="text-xs font-bold text-yellow-800 mb-3 uppercase tracking-wide">
+            ⚙️ Dev — Finaliser le mock
+          </p>
           <button
             onClick={handleMockComplete}
             disabled={isMockCompleting}
             className="w-full text-xs px-3 py-2 rounded-lg bg-yellow-200 hover:bg-yellow-300 font-medium text-yellow-900 disabled:opacity-50 transition-colors"
           >
-            {isMockCompleting ? 'En cours...' : '🔧 Ajouter mock skills et rafraîchir'}
+            {isMockCompleting
+              ? "En cours..."
+              : "🔧 Ajouter mock skills et rafraîchir"}
           </button>
         </div>
       )}
 
       <Footer />
     </div>
-  )
+  );
 }
