@@ -1,46 +1,46 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { FeelyMascot } from '@/components/feely-mascot'
-import { FeelingLogo } from '@/components/feeling-logo'
-import { Footer } from '@/components/footer'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { FeelyMascot } from "@/components/feely-mascot";
+import { FeelingLogo } from "@/components/feeling-logo";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
   AlertTriangle,
-} from 'lucide-react'
+} from "lucide-react";
 
 interface Analysis {
-  id: string
-  job_title: string
-  company_name: string
-  job_location: string
-  job_type: string
-  job_remote: string
-  job_url: string
-  overall_score: number
-  personality_score: number
-  values_score: number
-  skills_score: number | null
-  personality_analysis: { strengths: string[]; attentionPoints: string[] }
-  values_analysis: { strengths: string[]; attentionPoints: string[] }
-  skills_analysis: { strengths: string[]; attentionPoints: string[] } | null
-  strengths: string[]
-  attention_points: string[]
-  has_dealbreakers: boolean
-  dealbreaker_details: string[] | null
+  id: string;
+  job_title: string;
+  company_name: string;
+  job_location: string;
+  job_type: string;
+  job_remote: string;
+  job_url: string;
+  overall_score: number;
+  personality_score: number;
+  values_score: number;
+  skills_score: number | null;
+  personality_analysis: { strengths: string[]; attentionPoints: string[] };
+  values_analysis: { strengths: string[]; attentionPoints: string[] };
+  skills_analysis: { strengths: string[]; attentionPoints: string[] } | null;
+  strengths: string[];
+  attention_points: string[];
+  has_dealbreakers: boolean;
+  dealbreaker_details: string[] | null;
 }
 
 interface ResultsViewProps {
-  analysis: Analysis
-  hasTechnicalProfile: boolean | null
-  userId: string
+  analysis: Analysis;
+  hasTechnicalProfile: boolean | null;
+  userId: string;
 }
 
 /**
@@ -49,36 +49,79 @@ interface ResultsViewProps {
  * Sinon on affiche la valeur telle quelle.
  */
 function formatRecapField(label: string, value: string): string {
-  return value.trim().toLowerCase() === 'non spécifié'
+  return value.trim().toLowerCase() === "non spécifié"
     ? `${label} : non spécifié`
-    : value
+    : value;
 }
 
 // US 13.1 : verdict clair dérivé du score global.
 function getVerdict(score: number): {
-  label: string
-  tone: 'strong' | 'partial' | 'weak'
-  headline: string
+  label: string;
+  tone: "strong" | "partial" | "weak";
+  headline: string;
 } {
+  if (score >= 80) {
+    return {
+      label: "Bon feeling",
+      tone: "strong",
+      headline:
+        "Il y a un vrai bon feeling ici. Cette offre mérite clairement une candidature.",
+    };
+  }
+  if (score >= 75) {
+    return {
+      label: "Bon feeling",
+      tone: "strong",
+      headline:
+        "Ton profil a de vrais points solides pour cette offre. Ça vaut le coup de candidater.",
+    };
+  }
   if (score >= 70) {
     return {
-      label: 'Fort potentiel',
-      tone: 'strong',
-      headline: 'Super feeling sur la personnalité & les valeurs',
-    }
+      label: "Bon feeling",
+      tone: "strong",
+      headline:
+        "Cette offre semble vraiment alignée avec ce que tu recherches. Tu devrais postuler.",
+    };
+  }
+  if (score >= 60) {
+    return {
+      label: "Match partiel",
+      tone: "partial",
+      headline:
+        "Il y a une base intéressante ici. Quelques points méritent ton attention avant de postuler.",
+    };
+  }
+  if (score >= 50) {
+    return {
+      label: "Match partiel",
+      tone: "partial",
+      headline:
+        "Cette offre peut se tenter, mais certains éléments risquent de créer un écart.",
+    };
   }
   if (score >= 40) {
     return {
-      label: 'Match partiel',
-      tone: 'partial',
-      headline: 'Bon feeling sur la personnalité & les valeurs',
-    }
+      label: "Match partiel",
+      tone: "partial",
+      headline:
+        "Le match reste partiel pour l’instant. Il faudra bien cibler ta candidature.",
+    };
+  }
+  if (score >= 30) {
+    return {
+      label: "Feeling faible",
+      tone: "weak",
+      headline:
+        "Il y’a quelques écarts importants entre les attentes du poste et ton profil actuel.",
+    };
   }
   return {
-    label: 'Faible adéquation',
-    tone: 'weak',
-    headline: 'Feeling faible sur la personnalité & les valeurs',
-  }
+    label: "Feeling faible",
+    tone: "weak",
+    headline:
+      "Cette offre ne semble pas vraiment alignée avec ce qui valorise ton profil.",
+  };
 }
 
 // Badge circulaire avec le score en gros (inspiré de la maquette)
@@ -94,12 +137,12 @@ function BigScoreBadge({ score }: { score: number }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Barre dégradée rouge → jaune → vert avec curseur positionné sur le score.
 function GradientBar({ score }: { score: number }) {
-  const clamped = Math.max(0, Math.min(100, score))
+  const clamped = Math.max(0, Math.min(100, score));
   return (
     <div className="relative w-full max-w-md mx-auto">
       <div className="h-3 rounded-full bg-gradient-to-r from-red-400 via-yellow-300 to-green-400" />
@@ -109,7 +152,7 @@ function GradientBar({ score }: { score: number }) {
         aria-hidden
       />
     </div>
-  )
+  );
 }
 
 // Carte "section" dépliable (par défaut ouverte).
@@ -119,12 +162,12 @@ function SectionCard({
   strengths,
   attentionPoints,
 }: {
-  title: string
-  score: number
-  strengths: string[]
-  attentionPoints: string[]
+  title: string;
+  score: number;
+  strengths: string[];
+  attentionPoints: string[];
 }) {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(true);
 
   return (
     <div className="rounded-2xl border border-primary/30 bg-primary/5 overflow-hidden">
@@ -170,43 +213,47 @@ function SectionCard({
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsViewProps) {
-  const router = useRouter()
-  const verdict = getVerdict(analysis.overall_score)
-  const [isMockCompleting, setIsMockCompleting] = useState(false)
+export function ResultsView({
+  analysis,
+  hasTechnicalProfile,
+  userId,
+}: ResultsViewProps) {
+  const router = useRouter();
+  const verdict = getVerdict(analysis.overall_score);
+  const [isMockCompleting, setIsMockCompleting] = useState(false);
 
   const handleSignOut = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
-  }
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   const handleMockComplete = async (userId: string) => {
-    setIsMockCompleting(true)
+    setIsMockCompleting(true);
     try {
-      const response = await fetch('/api/dev/mock-complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/dev/mock-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ analysisId: analysis.id, userId }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error)
-      router.push(`/resultats-complets/${analysis.id}`)
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      router.push(`/resultats-complets/${analysis.id}`);
     } catch (error) {
-      console.error(error)
-      setIsMockCompleting(false)
+      console.error(error);
+      setIsMockCompleting(false);
     }
-  }
+  };
 
   // US 13.2 : les phrases "Pourquoi ça match" viennent du champ strengths[].
   const matchExplanation =
     analysis.strengths && analysis.strengths.length > 0
       ? analysis.strengths
-      : []
+      : [];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -227,8 +274,9 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
             <div className="container mx-auto px-4 py-3 flex items-center gap-3">
               <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
               <p className="text-sm text-destructive font-medium">
-                Critères rédhibitoires détectés :{' '}
-                {analysis.dealbreaker_details?.join(', ')}. Score plafonné à 30/100.
+                Critères rédhibitoires détectés :{" "}
+                {analysis.dealbreaker_details?.join(", ")}. Score plafonné à
+                30/100.
               </p>
             </div>
           </div>
@@ -237,7 +285,7 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
         <div className="container mx-auto px-4 py-10 max-w-4xl space-y-8">
           {/* Titre */}
           <h1 className="text-3xl md:text-4xl font-extrabold border-b border-border pb-3">
-            Ton feeling avec cette offre
+            Le feeling avec ce poste
           </h1>
 
           {/* Récapitulatif de l'offre */}
@@ -247,7 +295,9 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
               {(analysis.job_title || analysis.company_name) && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
                   {analysis.job_title}
-                  {analysis.company_name ? ` chez ${analysis.company_name}` : ''}
+                  {analysis.company_name
+                    ? ` chez ${analysis.company_name}`
+                    : ""}
                 </span>
               )}
               {analysis.company_name && (
@@ -257,17 +307,17 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
               )}
               {analysis.job_type && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {formatRecapField('Contrat', analysis.job_type)}
+                  {formatRecapField("Contrat", analysis.job_type)}
                 </span>
               )}
               {analysis.job_location && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {formatRecapField('Lieu', analysis.job_location)}
+                  {formatRecapField("Lieu", analysis.job_location)}
                 </span>
               )}
               {analysis.job_remote && (
                 <span className="inline-flex items-center px-4 py-2 rounded-full border border-border bg-background text-sm">
-                  {formatRecapField('Télétravail', analysis.job_remote)}
+                  {formatRecapField("Télétravail", analysis.job_remote)}
                 </span>
               )}
               {analysis.job_url && (
@@ -286,7 +336,8 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
 
           {/* Intro analyse phase 1 */}
           <p className="text-sm text-muted-foreground">
-            Première analyse basée sur la personnalité, les valeurs et culture de l&apos;entreprise.
+            Première analyse basée sur la personnalité, les valeurs et culture
+            de l&apos;entreprise.
           </p>
 
           {/* Score global + gradient bar */}
@@ -295,10 +346,10 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
             <GradientBar score={analysis.overall_score} />
             <p
               className={cn(
-                'text-xl md:text-2xl font-extrabold text-center',
-                verdict.tone === 'strong' && 'text-accent-foreground',
-                verdict.tone === 'partial' && 'text-primary',
-                verdict.tone === 'weak' && 'text-destructive',
+                "text-xl md:text-2xl font-extrabold text-center",
+                verdict.tone === "strong" && "text-accent-foreground",
+                verdict.tone === "partial" && "text-primary",
+                verdict.tone === "weak" && "text-destructive",
               )}
             >
               {verdict.headline}
@@ -320,7 +371,9 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
               title="Personnalité"
               score={analysis.personality_score}
               strengths={analysis.personality_analysis?.strengths ?? []}
-              attentionPoints={analysis.personality_analysis?.attentionPoints ?? []}
+              attentionPoints={
+                analysis.personality_analysis?.attentionPoints ?? []
+              }
             />
             <SectionCard
               title="Valeurs & Culture"
@@ -334,8 +387,8 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
           {!hasTechnicalProfile ? (
             <section className="rounded-3xl bg-primary/30 p-6 md:p-8 flex flex-col items-center text-center gap-4">
               <p className="text-base md:text-lg font-medium max-w-xl">
-                Pour une analyse globale, complète ton profil technique pour un feeling
-                encore plus précis.
+                Pour une analyse globale, complète ton profil technique pour un
+                feeling encore plus précis.
               </p>
               <Link href={`/profil-technique?from=${analysis.id}`}>
                 <Button
@@ -349,8 +402,8 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
           ) : (
             <section className="rounded-3xl bg-accent/30 p-6 md:p-8 flex flex-col items-center text-center gap-4">
               <p className="text-base md:text-lg font-medium max-w-xl">
-                Ton profil technique est déjà renseigné. Consulte l&apos;analyse complète
-                incluant la compatibilité des compétences.
+                Ton profil technique est déjà renseigné. Consulte l&apos;analyse
+                complète incluant la compatibilité des compétences.
               </p>
               <Link href={`/resultats-complets/${analysis.id}`}>
                 <Button
@@ -366,20 +419,24 @@ export function ResultsView({ analysis, hasTechnicalProfile, userId }: ResultsVi
       </main>
 
       {/* DEV ONLY — finaliser l'analyse avec mock skills */}
-      {process.env.NODE_ENV === 'development' && (
+      {process.env.NODE_ENV === "development" && (
         <div className="fixed bottom-4 right-4 z-50 bg-yellow-100 border-2 border-yellow-400 rounded-2xl p-4 shadow-xl max-w-xs">
-          <p className="text-xs font-bold text-yellow-800 mb-3 uppercase tracking-wide">⚙️ Dev — Finaliser le mock</p>
+          <p className="text-xs font-bold text-yellow-800 mb-3 uppercase tracking-wide">
+            ⚙️ Dev — Finaliser le mock
+          </p>
           <button
             onClick={() => handleMockComplete(userId)}
             disabled={isMockCompleting}
             className="w-full text-xs px-3 py-2 rounded-lg bg-yellow-200 hover:bg-yellow-300 font-medium text-yellow-900 disabled:opacity-50 transition-colors"
           >
-            {isMockCompleting ? 'En cours...' : '🔧 Ajouter mock skills → résultats complets'}
+            {isMockCompleting
+              ? "En cours..."
+              : "🔧 Ajouter mock skills → résultats complets"}
           </button>
         </div>
       )}
 
       <Footer />
     </div>
-  )
+  );
 }
