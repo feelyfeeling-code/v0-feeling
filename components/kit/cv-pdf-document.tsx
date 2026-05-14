@@ -264,9 +264,9 @@ export function CVPdfDocument({ cv }: { cv: CVData }) {
 
   const hasSkills = Array.isArray(cv.skills) && cv.skills.length > 0
   const hasSoftSkills = cv.softSkills && cv.softSkills.length > 0
-  const hasValues = cv.values && cv.values.length > 0
+  const hasLanguages = Array.isArray(cv.languages) && cv.languages.length > 0
   const hasInterests = Array.isArray(cv.interests) && cv.interests.length > 0
-  const showBottomGrid = hasSoftSkills || hasValues || hasInterests
+  const showBottomGrid = hasSoftSkills || hasLanguages || hasInterests
   const educationTitle = cv.education.length >= 2 ? 'Formations' : 'Formation'
 
   return (
@@ -393,7 +393,7 @@ export function CVPdfDocument({ cv }: { cv: CVData }) {
           </View>
         )}
 
-        {/* ── Grille bas : Qualités / Valeurs / Centres d'intérêt ─────── */}
+        {/* ── Grille bas : Qualités / Langues / Centres d'intérêt ─────── */}
         {showBottomGrid && (
           <View style={styles.bottomGrid}>
             {hasSoftSkills && (
@@ -409,13 +409,13 @@ export function CVPdfDocument({ cv }: { cv: CVData }) {
               </View>
             )}
 
-            {hasValues && (
+            {hasLanguages && (
               <View style={styles.gridColumn}>
-                <Text style={styles.gridColumnTitle}>Valeurs</Text>
+                <Text style={styles.gridColumnTitle}>Langues</Text>
                 <View style={styles.pillContainer}>
-                  {cv.values.map((v, i) => (
-                    <Text key={`v-${i}`} style={styles.pillValue}>
-                      {v}
+                  {cv.languages.map((l, i) => (
+                    <Text key={`l-${i}`} style={styles.pillValue}>
+                      {l}
                     </Text>
                   ))}
                 </View>

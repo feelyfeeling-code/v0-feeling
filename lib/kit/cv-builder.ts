@@ -44,8 +44,8 @@ export interface CVData {
   softSkills: string[]
   /** Centres d'intérêt — éditable par l'utilisateur, vide par défaut. */
   interests: string[]
-  /** Valeurs sélectionnées en libellés lisibles. */
-  values: string[]
+  /** Langues — éditable par l'utilisateur, vide par défaut. */
+  languages: string[]
 }
 
 interface BuildCVParams {
@@ -67,7 +67,6 @@ interface BuildCVParams {
     main_tasks: string | null
   }>
   skills: string[]
-  values: string[]
   dreamJob: { job_titles: string[]; locations: string[] } | null
   job: {
     title: string | null
@@ -214,8 +213,6 @@ export function buildCV(params: BuildCVParams): CVData {
 
   const skills = params.skills.map((s) => s.trim()).filter(Boolean)
 
-  const valueLabels = params.values.map((v) => VALUE_LABELS[v] ?? v)
-
   return {
     identity: {
       fullName,
@@ -251,7 +248,7 @@ export function buildCV(params: BuildCVParams): CVData {
     skills,
     softSkills: [],
     interests: [],
-    values: valueLabels,
+    languages: [],
   }
 }
 

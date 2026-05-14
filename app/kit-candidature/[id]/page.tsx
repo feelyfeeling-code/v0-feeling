@@ -61,6 +61,7 @@ export default async function KitCandidaturePage({ params }: Props) {
           ...(raw as unknown as CVData),
           skills: migrateLegacySkills(raw.skills),
           interests: Array.isArray(raw.interests) ? (raw.interests as string[]) : [],
+          languages: Array.isArray(raw.languages) ? (raw.languages as string[]) : [],
         }
       })()
     : null

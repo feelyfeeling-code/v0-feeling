@@ -82,6 +82,7 @@ export async function POST(request: Request) {
         ...cvData,
         skills: migratedSkills,
         interests: Array.isArray(cvData.interests) ? cvData.interests : [],
+        languages: Array.isArray(cvData.languages) ? cvData.languages : [],
       }
 
       if (shouldPersistMigration) {
@@ -177,7 +178,6 @@ export async function POST(request: Request) {
       academic: academicResult.data ?? null,
       experiences: rawExperiences,
       skills: rawSkills,
-      values: valuesResult.data?.selected_values ?? [],
       dreamJob: dreamJobResult.data ?? null,
       job: {
         title: analysis.job_title,
