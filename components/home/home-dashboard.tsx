@@ -403,7 +403,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                   <Link
                     key={analysis.id}
                     href={`/resultats-complets/${analysis.id}`}
-                    className="bg-background rounded-2xl px-6 py-5 border border-border hover:border-primary transition-colors flex items-center justify-between gap-6 group"
+                    className="bg-background rounded-2xl px-6 py-5 border border-border hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-between gap-6 group"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-muted-foreground mb-1">
