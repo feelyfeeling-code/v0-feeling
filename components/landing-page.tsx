@@ -43,7 +43,7 @@ export function LandingPage() {
                 Et si finalement, c'était l'entreprise qui ne te correspondait pas ? 
               </h1>
               <p className="mt-6 text-lg  md:text-xl text-muted-foreground max-w-2xl">
-Zéro retour après des dizaines de candidatures. Tu doutes de son CV, de son profil, de toi. Et si le problème venait aussi des offres que tu choisis ?              </p>
+Tu as fini ton Bac+5 et depuis, zéro retour après des dizaines de candidatures. Tu commences à douter de ton CV, de ton profil, de toi. Et si le problème venait aussi des offres que tu choisis ?</p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   size="lg" 
