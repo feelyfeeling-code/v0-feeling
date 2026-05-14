@@ -13,7 +13,7 @@ export function Footer() {
               <FeelingLogo size="lg" className="text-background" asLink={false} />
               <div className="w-px h-12 bg-background/30" />
               <p className="text-lg font-medium leading-tight">
-                Bac+5 en recherche ?<br />
+                Bac+5 en recherche de ton premier emploi ?<br />
                 Postule là où tu as un bon <span className="text-primary">feeling</span>.
               </p>
             </div>

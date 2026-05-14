@@ -33,7 +33,7 @@ export function AuthHeader() {
     <header className="w-full bg-background sticky top-0 z-50 mt-4">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/accueil" aria-label="Retour à l'accueil">
-          <FeelingLogo size="md" className="mt-4" />
+          <FeelingLogo size="md" className="mt-4" color="var(--color-primary)"/>
         </Link>
 
         <div className="flex items-center gap-3">

@@ -598,7 +598,7 @@ export function ProfilePage({
           {/* ── 1. Infos générales ── */}
           <Section
             title="Informations générales"
-            icon={<span className="text-lg">👤</span>}
+            icon={<span className="text-lg"></span>}
             isEditing={editInfo}
             isSaving={savingInfo}
             onEdit={() => setEditInfo(true)}
@@ -628,7 +628,7 @@ export function ProfilePage({
           {/* ── 2. Situation actuelle ── */}
           <Section
             title="Situation actuelle"
-            icon={<span className="text-lg">📍</span>}
+            icon={<span className="text-lg"></span>}
             isEditing={editSit}
             isSaving={savingSit}
             onEdit={() => setEditSit(true)}
@@ -667,7 +667,7 @@ export function ProfilePage({
           {/* ── 3. Formation académique ── */}
           <Section
             title="Formation académique"
-            icon={<span className="text-lg">🎓</span>}
+            icon={<span className="text-lg"></span>}
             isEditing={editAcad}
             isSaving={savingAcad}
             onEdit={() => setEditAcad(true)}
@@ -743,7 +743,7 @@ export function ProfilePage({
           {/* ── 4. Personnalité ── */}
           <Section
             title="Personnalité"
-            icon={<span className="text-lg">🧠</span>}
+            icon={<span className="text-lg"></span>}
             isEditing={editPerso}
             isSaving={savingPerso}
             onEdit={() => setEditPerso(true)}
@@ -827,7 +827,7 @@ export function ProfilePage({
           {/* ── 5. Valeurs & Rédhibitoires ── */}
           <Section
             title="Valeurs & Rédhibitoires"
-            icon={<span className="text-lg">💎</span>}
+            icon={<span className="text-lg"></span>}
             isEditing={editVal}
             isSaving={savingVal}
             onEdit={() => setEditVal(true)}
@@ -866,7 +866,7 @@ export function ProfilePage({
           {/* ── 6. Poste idéal ── */}
           <Section
             title="Poste idéal"
-            icon={<span className="text-lg">🎯</span>}
+            icon={<span className="text-lg"></span>}
             isEditing={editDream}
             isSaving={savingDream}
             onEdit={() => setEditDream(true)}
@@ -944,7 +944,7 @@ export function ProfilePage({
           {/* ── 7. Profil technique ── */}
           <Section
             title="Profil technique"
-            icon={<span className="text-lg">💼</span>}
+            icon={<span className="text-lg"></span>}
             isEditing={editTech}
             isSaving={savingTech}
             onEdit={() => setEditTech(true)}
