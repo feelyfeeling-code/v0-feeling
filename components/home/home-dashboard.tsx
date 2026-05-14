@@ -226,19 +226,12 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
       {/* Main content */}
       <main className="flex-1">
         {/* Hero section */}
-        <section className="py-12 md:py-20 relative overflow-hidden">
+        <section className="py-12 md:py-20 relative ">
           {/* Decorative elements */}
-          <svg 
-            className="absolute top-10 right-20 w-16 h-16 text-accent hidden md:block"
-            viewBox="0 0 100 100"
-            fill="currentColor"
-          >
-            <path d="M10 90 L90 50 L10 10 L30 50 Z" opacity="0.6" />
-          </svg>
           
           <div className="container mx-auto px-4">
             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-16">
-              <div className="flex-1">
+              <div className="flex-1 z-10">
                 <h1 className="text-3xl md:text-4xl font-bold mb-4">
                   Cette offre, est-elle faite pour toi ?
                 </h1>
@@ -253,11 +246,11 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                     onClick={() => setMode('url')}
                     className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                       mode === 'url'
-                        ? 'bg-background shadow-sm'
+                        ? 'bg-background '
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <Link2 className="w-4 h-4" />
+                    <Link2 className="w-4 h-4 " />
                     Coller une URL
                   </button>
                   <button
@@ -265,7 +258,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                     onClick={() => setMode('paste')}
                     className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                       mode === 'paste'
-                        ? 'bg-background shadow-sm'
+                        ? 'bg-background'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
@@ -286,7 +279,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                         placeholder="www.feeling.com/offre-x"
                         value={jobUrl}
                         onChange={(e) => setJobUrl(e.target.value)}
-                        className="h-14 pl-12 text-base"
+                        className="h-14 pl-13 text-base bg-background w-4xl"
                         disabled={isAnalyzing || dailyAnalysisCount >= dailyAnalysisLimit}
                       />
                     </div>
@@ -386,15 +379,19 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                 )}
               </div>
               
-              <div className="flex-shrink-0 hidden lg:block">
-                <FeelyMascot variant="purple" size="xl" />
+                  <div className="flex-shrink-0 hidden lg:block absolute right-0 top-1/2 transform -translate-y-1/3">
+                
+                    <img 
+                      src="/image-bg-landing.svg" 
+                      className="max-h-2xl lg:block hidden "
+                    />
               </div>
             </div>
           </div>
         </section>
     {/* Recent analyses */}
         {recentAnalyses.length > 0 && (
-          <section className="py-12">
+          <section className="my-12 z-10 relative">
             <div className="container mx-auto px-4">
               <h2 className="text-2xl font-bold mb-8">Voici tes dernières analyses :</h2>
 
@@ -433,68 +430,86 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
           </section>
         )}
         
-        {/* What is Feeling section */}
-        <section className="py-12 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto bg-background rounded-3xl p-8 shadow-sm border border-border">
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="flex-shrink-0">
-                  <FeelyMascot variant="blue" size="lg" speechBubble="Ici Feely" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">
-                    <FeelingLogoInline heightEm={1.4} />, qu&apos;est-ce que c&apos;est ?
-                  </h2>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Feeling, c&apos;est ton allié dans ta recherche d&apos;emploi. Il t&apos;aide à 
-                    trouver un job qui te ressemble vraiment. Pas juste un job qui coche 
-                    les cases, un job qui colle avec ta personnalité et tes valeurs.
-                  </p>
-                </div>
+      {/* What is Feeling Section */}
+      <section className="mt-20 pb-10 z-10 relative">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto bg-background rounded-3xl p-8 md:p-12 border border-primary">
+            <div className="flex flex-col md:flex-row items-center lg:gap-20">
+              <div className="flex-shrink-0 ml-10">
+                <FeelyMascot variant="blue" size="lg" speechBubble="Ici Feely" />
+              </div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                  <FeelingLogoInline heightEm={1.4} color="var(--color-primary)" className='mr-0.5'/>
+                   , qu&apos;est-ce que c&apos;est ?
+                </h2>
+                <p className="text-muted-foreground leading-relaxed">
+Feeling, c’est simple : tu trouves une offre en ligne, tu la colles ici, et Feely analyse les missions, la culture, les valeurs et les attentes du poste pour t’expliquer concrètement si cette offre te correspond vraiment… ou non.                </p>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
         {/* How it works */}
         <section className="py-12">
           <div className="container mx-auto px-4">
             <h2 className="text-2xl font-bold mb-8">Comment ça marche ?</h2>
             
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-secondary rounded-2xl p-6">
+          <div className="grid md:grid-cols-4 gap-8 mx-auto">
+            {/* Step 1 */}
+            <div className="relative">
+              <div className="bg-secondary rounded-2xl p-6 lg:h-auto h-60 ">
                 <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
                   1
                 </div>
-                <h3 className="font-bold mb-2">On a appris à te connaître</h3>
-                <p className="text-sm text-muted-foreground">
-                  Tu as répondu à quelques questions sur ta personnalité, tes valeurs et 
-                  tes ambitions. Pas ton CV, toi. Et c&apos;est là que tout commence.
-                </p>
-              </div>
-              
-              <div className="bg-primary/30 rounded-2xl p-6">
-                <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
-                  2
-                </div>
-                <h3 className="font-bold mb-2">Tu testes une offre</h3>
-                <p className="text-sm text-muted-foreground">
-                  Colle le lien d&apos;une offre qui t&apos;intéresse. Feely analyse si elle te 
-                  ressemble vraiment.
-                </p>
-              </div>
-              
-              <div className="bg-accent/30 rounded-2xl p-6">
-                <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
-                  3
-                </div>
-                <h3 className="font-bold mb-2">Tu vois les résultats</h3>
-                <p className="text-sm text-muted-foreground">
-                  Tu verras si cette offre te ressemble vraiment sur ta personnalité, la 
-                  culture de l&apos;entreprise et tes compétences.
+                <h3 className="text-xl font-bold mb-3">Parle-nous de toi</h3>
+                <p className="text-foreground text-sm leading-relaxed">
+             Tu réponds à quelques questions sur ta personnalité, tes valeurs et ce que tu recherches vraiment dans un job.
                 </p>
               </div>
             </div>
+            
+            {/* Step 2 */}
+            <div className="relative">
+              <div className="bg-info rounded-2xl p-6 lg:h-auto h-60 mt-8">
+                <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
+                  2
+                </div>
+                <h3 className="text-xl font-bold mb-3">Partage une offre</h3>
+                <p className="text-foreground text-sm leading-relaxed">
+         Tu colles le lien d’une offre trouvée en ligne pour que Feely puisse regarder si elle te correspond vraiment.
+                </p>
+              </div>
+            </div>
+            
+            {/* Step 3 */}
+            <div className="relative">
+              <div className="bg-accent rounded-2xl p-6 lg:h-auto h-60 mt-16">
+                <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
+                  3
+                </div>
+                <h3 className="text-xl font-bold mb-3">Découvre ton feeling</h3>
+                <p className="text-foreground text-sm leading-relaxed">
+        Feely analyse l’offre et t’explique clairement ce qui colle avec ton profil, ce qui crée un écart et pourquoi.
+                </p>
+
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="relative">
+              <div className="bg-primary rounded-2xl p-6 lg:h-auto h-60 mt-24">
+                <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center font-bold mb-4">
+                  4
+                </div>
+                <h3 className="text-xl font-bold mb-3">Prépare ta candidature</h3>
+                <p className="text-foreground text-sm leading-relaxed">
+Tu génères un CV et une lettre de motivation adaptés à ton profil et à l’offre pour candidater avec plus de confiance.
+                </p>
+              </div>
+            </div>
+          </div>
           </div>
         </section>
 

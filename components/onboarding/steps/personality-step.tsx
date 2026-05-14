@@ -437,7 +437,7 @@ export function PersonalityStep({
             </p>
             <p className="text-sm">
               Il comporte <strong>{INTEGRATED_TEST_QUESTIONS.length} questions</strong>{' '}
-              simples — réponds spontanément, il n&apos;y a pas de bonne ou
+              simples, il n&apos;y a pas de bonne ou
               mauvaise réponse.
             </p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
