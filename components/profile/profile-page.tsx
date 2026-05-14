@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, type KeyboardEvent } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -13,10 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { FeelingLogo } from '@/components/feeling-logo'
+import { AuthHeader } from '@/components/auth-header'
 import { Footer } from '@/components/footer'
 import {
-  ArrowLeft,
   Pencil,
   X,
   Plus,
@@ -418,8 +415,6 @@ export function ProfilePage({
   skills: initialSkills,
   experiences: initialExperiences,
 }: ProfilePageProps) {
-  const router = useRouter()
-
   // ── Info section state ──
   const [editInfo, setEditInfo] = useState(false)
   const [savingInfo, setSavingInfo] = useState(false)
@@ -554,14 +549,6 @@ export function ProfilePage({
     }
   }
 
-  const handleSignOut = async () => {
-    const { createClient } = await import('@/lib/supabase/client')
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
-  }
-
   // ─── Experience helpers ───────────────────────────────────────────────────
 
   const addExp = () => setExperiences((prev) => [...prev, emptyExp()])
@@ -597,22 +584,7 @@ export function ProfilePage({
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/accueil">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <FeelingLogo size="md" />
-          </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground">
-            Déconnexion
-          </Button>
-        </div>
-      </header>
+      <AuthHeader />
 
       <main className="flex-1 container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">

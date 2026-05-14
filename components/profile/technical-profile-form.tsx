@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FeelyMascot } from '@/components/feely-mascot'
-import { FeelingLogo } from '@/components/feeling-logo'
+import { AuthHeader } from '@/components/auth-header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -234,25 +234,9 @@ export function TechnicalProfileForm({
     }
   }
 
-  const handleSignOut = async () => {
-    const { createClient } = await import('@/lib/supabase/client')
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <FeelingLogo size="md" />
-          <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground">
-            Déconnexion
-          </Button>
-        </div>
-      </header>
+      <AuthHeader />
 
       <main className="flex-1 container mx-auto px-4 py-8 max-w-2xl">
         {/* Hero */}

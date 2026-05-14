@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { FeelyMascot } from "@/components/feely-mascot";
-import { FeelingLogo } from "@/components/feeling-logo";
+import { AuthHeader } from "@/components/auth-header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -225,13 +225,6 @@ export function ResultsView({
   const verdict = getVerdict(analysis.overall_score);
   const [isMockCompleting, setIsMockCompleting] = useState(false);
 
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
-  };
-
   const handleMockComplete = async (userId: string) => {
     setIsMockCompleting(true);
     try {
@@ -257,15 +250,7 @@ export function ResultsView({
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <FeelingLogo size="md" />
-          <Button variant="outline" size="sm" onClick={handleSignOut}>
-            Déconnexion
-          </Button>
-        </div>
-      </header>
+      <AuthHeader />
 
       <main className="flex-1">
         {/* Dealbreaker warning */}

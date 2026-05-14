@@ -3,9 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { FeelyMascot } from "@/components/feely-mascot";
-import { FeelingLogo } from "@/components/feeling-logo";
+import { AuthHeader } from "@/components/auth-header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -289,13 +288,6 @@ export function CompleteResultsView({
 
   const verdict = getVerdict(effectiveOverall);
 
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
-  };
-
   const verdictBadgeClass =
     verdict.tone === "strong"
       ? "bg-accent/30 text-foreground"
@@ -312,20 +304,7 @@ export function CompleteResultsView({
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <FeelingLogo size="md" />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSignOut}
-            className="text-muted-foreground"
-          >
-            Déconnexion
-          </Button>
-        </div>
-      </header>
+      <AuthHeader />
 
       <main className="flex-1">
         {/* US 15.1 : bandeau rouge si rédhibitoire détecté */}
