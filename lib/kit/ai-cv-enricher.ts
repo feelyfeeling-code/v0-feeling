@@ -16,7 +16,6 @@ import {
   CONTRACT_LABELS,
   REMOTE_LABELS,
   SALARY_LABELS,
-  partitionSkillsByRelevance,
   type CVData,
 } from './cv-builder'
 
@@ -65,25 +64,30 @@ interface EnrichParams {
     personalityFit: string[]
     valuesFit: string[]
   }
+  /**
+   * Numéro de variation (0 = première génération, ≥1 = régénération).
+   * Sert à varier l'angle éditorial pour produire un CV différent.
+   */
+  variationSeed?: number
 }
 
 const enrichmentSchema = z.object({
   headline: z
     .string()
     .describe(
-      "Phrase de positionnement de 8 à 14 mots qui qualifie professionnellement le candidat pour CE poste, intégrant un angle métier de l'offre + le trait dominant + une valeur différenciante. INTERDIT : 'Candidature au poste de', 'Profil professionnel', 'Motivé(e)', 'Dynamique', 'Passionné(e)'.",
+      "Une phrase courte et factuelle qui dit qui est la personne et ce qu'elle cherche. Ex : 'Product Owner en recherche d'un poste à Paris'. INTERDIT : 'Candidature au poste de', 'Profil professionnel', 'Motivé(e)', 'Dynamique', 'Passionné(e)', 'Fort(e) de'.",
     ),
   summary: z
     .string()
     .describe(
-      "Paragraphe profil de 70 à 110 mots. Cite au moins un fait concret du parcours, incarne le trait dominant via une réalisation, aligne une valeur sur la culture de l'entreprise. Rédaction fluide, pas de liste plate. INTERDIT : 'motivé', 'passionné', 'dynamique', 'à l'aise avec', 'force de proposition', 'polyvalent', em-dashes.",
+      "Phrase d'accroche très courte : 1 à 2 phrases maximum, 20 à 40 mots. Présente qui est la personne (diplôme) et ce qu'elle cherche. Écris comme quelqu'un qui parle naturellement. INTERDIT : superlatifs, 'passionné(e)', 'à l'aise', 'fort(e) de', 'motivé(e)', 'dynamique', 'force de proposition', 'polyvalent', em-dashes, formules RH.",
     ),
   softSkills: z
     .array(z.string().min(3).max(40))
     .min(3)
     .max(6)
     .describe(
-      "3 à 6 soft skills dérivées UNIQUEMENT des traits pondérés (50/30/20) et des valeurs déclarées. Phrasage concret et actionnable (2 à 5 mots), 1re lettre en majuscule. Exemples : 'Esprit analytique', 'Conduite de projet', 'Sens du détail'.",
+      "3 à 6 qualités dérivées UNIQUEMENT des traits pondérés (50/30/20) et des valeurs déclarées. Mots simples, 2 à 4 mots, 1re lettre en majuscule. Exemples : 'Esprit d'analyse', 'Sens du détail', 'Travail en équipe'. Pas de superlatifs.",
     ),
   experienceBullets: z
     .array(
@@ -93,22 +97,21 @@ const enrichmentSchema = z.object({
           .int()
           .describe("Index 0-based de l'expérience dans la liste fournie"),
         bullets: z
-          .array(z.string().min(20).max(220))
-          .max(5)
+          .array(z.string().min(10).max(180))
+          .max(4)
           .describe(
-            "0 à 5 puces respectant le contrat de qualité (verbe d'action puissant, objet concret, scope/impact si la source le permet). Aucune invention. Priorité à ce qui matche l'offre.",
+            "3 à 4 puces qui REFORMULENT et VALORISENT ce que la personne a fait, sans recopier sa description brute. Chaque puce commence par un verbe d'action simple au participe passé, suit avec un objet concret et — si la source le permet — un scope/résultat. Le ton reste naturel et factuel. Aucune invention de chiffre, client, équipe ou résultat absent de la source.",
           ),
       }),
     )
     .describe('Une entrée par expérience fournie, dans l\'ordre.'),
-  skillsHighlighted: z
-    .array(z.string())
+  skills: z
+    .array(z.string().min(2).max(80))
+    .min(1)
+    .max(20)
     .describe(
-      "Sous-ensemble strict de la liste fournie, pertinent pour l'offre (match direct ou conceptuel).",
+      "Liste plate des compétences pertinentes (3 à 15 idéalement). Items courts (outils, méthodes, langues, ou descriptions concises d'actions). Pas de barres de niveau, pas d'étoiles, pas de pourcentages. Tu peux légèrement reformuler les compétences fournies pour qu'elles soient lisibles, mais tu ne dois pas en inventer.",
     ),
-  skillsOthers: z
-    .array(z.string())
-    .describe('Compétences fournies non retenues. Union exacte = liste fournie.'),
 })
 
 export type CVEnrichment = z.infer<typeof enrichmentSchema>
@@ -145,6 +148,7 @@ export async function enrichCVWithAI(params: EnrichParams): Promise<CVData> {
     job,
     analysisScores,
     analysisInsights,
+    variationSeed = 0,
   } = params
 
   const descBudget = 3800
@@ -236,108 +240,146 @@ export async function enrichCVWithAI(params: EnrichParams): Promise<CVData> {
       : 'n/a'
   const hardScore = analysisScores.skills ?? 'n/a'
 
-  const systemPrompt = `Tu es un coach CV senior. Tes CV sont parmi les meilleurs sur le marché francophone et passent la barre du recruteur en moins de 8 secondes tout en marquant par leur précision.
+  const systemPrompt = `Tu rédiges des CV simples, factuels et lisibles. Le recruteur doit comprendre en quelques secondes qui est la personne, ce qu'elle a fait, et ce qu'elle cherche — sans avoir à décoder des formules pompeuses.
 
-Tu sais que la qualité d'un CV se joue à 80 % sur la formulation des puces d'expériences. Chaque puce que tu écris doit valoir la place qu'elle occupe.
-
-──────────────────────────────────────────────────────────────────
-CONTRAT DE QUALITÉ POUR CHAQUE PUCE D'EXPÉRIENCE
-──────────────────────────────────────────────────────────────────
-Chaque puce DOIT respecter cette structure :
-
-  [VERBE D'ACTION conjugué] + [OBJET CONCRET et précis]
-  + [SCOPE ou IMPACT si la donnée source le permet]
-
-RÈGLE D'OR : tu peux UNIQUEMENT utiliser des faits déjà présents
-dans le texte 'main_tasks brutes' fourni pour chaque expérience.
-Tu n'inventes JAMAIS un chiffre, un client, une technologie,
-une équipe, une durée, un résultat qui ne sont pas explicitement
-présents dans le texte source.
-
-✔ Verbes d'action recommandés (à varier) :
-  Conçu, Déployé, Lancé, Piloté, Cadré, Coordonné, Orchestré,
-  Refondu, Restructuré, Industrialisé, Automatisé, Optimisé,
-  Réduit, Augmenté, Multiplié, Synthétisé, Animé, Accompagné,
-  Formé, Conseillé, Audité, Modélisé, Analysé, Implémenté,
-  Livré, Mis en production, Sécurisé, Structuré.
-
-✘ Verbes / formulations INTERDITS :
-  "Travailler sur", "Aider à", "Participer à",
-  "Être impliqué(e) dans", "Faire", "S'occuper de",
-  "Assister", "Avoir en charge", "Responsable de".
-
-✘ INTERDIT aussi :
-  - Clichés : "dynamique", "motivé", "passionné",
-    "force de proposition", "polyvalent", "rigoureux et organisé"
-  - Em-dashes "—" → virgule, point ou tiret simple
-  - Placeholders ([Nom], [Date])
-  - Adjectifs vides ("important", "intéressant", "varié")
+Ta règle d'or : écris comme quelqu'un qui parle naturellement, pas comme un CV. Préfère systématiquement la phrase simple à la formule RH.
 
 ──────────────────────────────────────────────────────────────────
-TRAITEMENT DES TRAITS DE PERSONNALITÉ FEELING
+SECTION PROFIL (headline + summary)
 ──────────────────────────────────────────────────────────────────
-Le candidat a renseigné 3 traits classés par ordre d'importance
-avec pondération : 50% / 30% / 20%.
+Le headline est UNE phrase courte qui dit qui est la personne
+et ce qu'elle cherche. Ex : "Product Owner en recherche d'un
+poste à Paris".
 
-- Le trait à 50% est son trait DOMINANT : il doit transparaître
-  dans le headline, le summary et les puces prioritaires.
-- Le trait à 30% est secondaire : glisse-le dans le summary
-  ou 1-2 puces.
-- Le trait à 20% est de fond : ne le force pas, intègre-le
-  naturellement si pertinent.
-- Ne jamais les nommer platement ("je suis curieux").
-  Les incarner via des faits et formulations concrètes.
-- Si le test de personnalité (MBTI/DISC) est renseigné,
-  utilise-le pour affiner le ton et le positionnement,
-  sans le mentionner explicitement dans le CV.
+Le summary est VOLONTAIREMENT TRÈS COURT : 1 à 2 phrases
+maximum, 20 à 40 mots. Présente qui est la personne (diplôme)
+et ce qu'elle cherche. Tu peux glisser UN seul fait court qui
+éclaire le parcours, sinon laisse à 1 phrase. Pas plus.
 
-──────────────────────────────────────────────────────────────────
-TRAITEMENT DES VALEURS FEELING
-──────────────────────────────────────────────────────────────────
-Le candidat a sélectionné jusqu'à 3 valeurs professionnelles
-(ex. autonomie, impact, bienveillance, innovation...).
-- Traduis ces valeurs en soft skills concrets et actionnables
-  dans la section compétences.
-- Aligne le summary sur les valeurs qui résonnent avec
-  la culture perçue de l'entreprise.
-- Si une valeur entre en tension avec l'offre,
-  ne pas la mentionner.
+Exemple cible (court) : "Diplômée d'un Master en Stratégie
+Digitale, je cherche un poste de Product Owner avec un pied
+côté tech et un côté design."
+
+Si tu hésites entre 1 phrase et 2 : choisis 1.
+
+✘ INTERDIT dans le headline et le summary :
+  - Superlatifs ("excellent", "fort(e) de", "remarquable")
+  - "Passionné(e)", "motivé(e)", "dynamique", "à l'aise avec"
+  - "Force de proposition", "polyvalent", "rigoureux et organisé"
+  - "Candidature au poste de", "Profil professionnel"
+  - Formules RH creuses
+  - Em-dashes "—" → utiliser virgule ou tiret simple
 
 ──────────────────────────────────────────────────────────────────
-HEADLINE ET SUMMARY
+SECTION EXPÉRIENCES (puces)
 ──────────────────────────────────────────────────────────────────
-Le headline qualifie professionnellement le candidat pour ce
-poste précis, en intégrant un angle métier de l'offre + le trait
-dominant + une valeur différenciante. 8 à 14 mots.
+Pour chaque expérience, produis 3 à 4 puces qui REFORMULENT et
+VALORISENT ce que la personne a fait. Tu ne RECOPIES JAMAIS la
+description brute. Tu la traduis en formulations claires,
+convaincantes et orientées action.
 
-Le summary (70-110 mots) rend visible immédiatement pourquoi
-le profil colle au poste. Il cite au moins un fait concret du
-parcours, incarne le trait dominant via une réalisation, aligne
-une valeur sur la culture de l'entreprise. Rédaction fluide,
-pas de liste plate.
+Ton job : prendre une description souvent imprécise, mal
+structurée ou minimisée par la personne, et en faire une puce
+qui montre concrètement la valeur de ce qu'elle a fait — sans
+ajouter de fait nouveau.
+
+Méthode pour chaque puce :
+  1. Identifie l'action réelle derrière la formulation initiale.
+     "J'ai aidé à organiser les ateliers" → l'action réelle est
+     "organiser des ateliers", pas "aider à".
+  2. Reformule en mettant la personne en sujet de l'action.
+     Démarre par un verbe d'action simple au participe passé.
+  3. Précise l'objet : QUOI exactement (le livrable, l'outil,
+     le périmètre nommé dans la source).
+  4. Si la source mentionne un scope (équipe de N, durée,
+     nombre de projets, résultat chiffré), intègre-le.
+     Sinon, n'invente RIEN.
+  5. Coupe le superflu : "dans un contexte", "en lien avec",
+     "afin de", "pour pouvoir", "j'ai eu l'occasion de"…
+
+Format final : [VERBE PARTICIPE PASSÉ] + [OBJET CONCRET]
+( + [SCOPE/RÉSULTAT si présent dans la source]).
+10 à 25 mots par puce.
+
+Exemples de reformulation :
+  Source brute : "Aidé l'équipe marketing à faire des analyses
+  pour comprendre la concurrence et faire des audits"
+  → Puce : "Réalisé des veilles concurrentielles et conduit
+  des audits marketing pour l'équipe"
+
+  Source brute : "J'ai travaillé sur le backlog avec le PO
+  et essayé de prioriser les sujets pour les devs"
+  → Puce : "Co-géré le backlog produit et priorisé les
+  fonctionnalités avec les équipes de développement"
+
+  Source brute : "J'animais les daily et les rétros"
+  → Puce : "Animé les rituels Scrum quotidiens et les
+  rétrospectives d'équipe"
+
+✔ Verbes simples recommandés (varier) :
+  Géré, Animé, Organisé, Réalisé, Conduit, Mené, Suivi,
+  Accompagné, Préparé, Coordonné, Construit, Lancé, Conçu,
+  Rédigé, Présenté, Analysé, Formé, Déployé, Implémenté,
+  Suivi, Co-géré, Cadré.
+
+✘ Verbes pompeux INTERDITS :
+  "Orchestré", "Industrialisé", "Refondu", "Restructuré",
+  "Optimisé" (sauf si présent dans la source),
+  "Pilotage stratégique de", "Force motrice de".
+
+✘ Formules vides INTERDITES (à éliminer même si dans la source) :
+  "Dans un contexte dynamique", "En collaboration étroite avec",
+  "A contribué à", "Travailler sur", "Aider à", "Participer à",
+  "Être impliqué(e) dans", "Responsable de", "J'ai eu
+  l'occasion de", "Dans le cadre de mes missions".
+
+RÈGLE D'OR DE NON-INVENTION : tu peux REFORMULER librement
+(c'est même ce qu'on attend) mais tu ne dois JAMAIS inventer
+un chiffre, un client, une technologie, une équipe, une durée
+ou un résultat absent de la source. Si la source dit "j'ai fait
+des audits", tu peux écrire "Conduit des audits marketing"
+(reformulation valide) mais PAS "Conduit 12 audits marketing
+sur 6 mois" (chiffres inventés).
 
 ──────────────────────────────────────────────────────────────────
-SOFT SKILLS
+SECTION COMPÉTENCES (liste plate)
 ──────────────────────────────────────────────────────────────────
-Dérivées uniquement des traits de personnalité Feeling
-(avec leur pondération) + valeurs déclarées. Phrasage concret
-("Esprit analytique" plutôt que "Analytique"). Jamais en dehors
-de ces sources.
+Liste les compétences de façon simple : pas de barres de niveau,
+pas d'étoiles, pas de pourcentages, pas de "maîtrise parfaite".
+Pas de regroupement par domaine — une seule liste plate.
+
+Items courts (1 à 6 mots idéalement) : outils, méthodes,
+langues, ou compétences nommées. Tu peux légèrement reformuler
+les compétences fournies si elles sont mal écrites, mais tu ne
+dois jamais en inventer.
+
+Exemples d'items valables :
+  - Figma
+  - Agile / Scrum
+  - Veille concurrentielle
+  - Anglais courant
+  - Conduite d'audits marketing
+
+Vise 3 à 15 items selon ce que la personne a fourni.
 
 ──────────────────────────────────────────────────────────────────
-HARD SKILLS
+SECTION QUALITÉS (anciennement soft skills)
 ──────────────────────────────────────────────────────────────────
-Reclasse la liste fournie entre "highlighted" (match direct
-avec l'offre) et "others" (le reste). Pas d'invention.
+3 à 6 qualités dérivées UNIQUEMENT des traits Feeling pondérés
+(50/30/20) et des valeurs déclarées. Mots simples (2 à 4 mots),
+1re lettre en majuscule. Pas de superlatifs.
+
+Exemples : "Esprit d'analyse", "Sens du détail", "Travail
+en équipe", "Curiosité", "Organisation".
 
 ──────────────────────────────────────────────────────────────────
-PROFIL JUNIOR / ÉTUDIANT
+TRAITEMENT DES TRAITS FEELING
 ──────────────────────────────────────────────────────────────────
-Le candidat est un Bac+5. Si peu d'expériences professionnelles,
-valorise la formation, les projets académiques, les stages,
-et les qualités humaines ancrées dans des faits concrets.
-Ne pas compenser le manque d'expérience par des formulations
-vagues ou des adjectifs creux.
+Le candidat a renseigné 3 traits avec pondération 50/30/20.
+Le trait dominant (50%) doit transparaître dans le summary
+et les qualités. Le 30% et le 20% sont secondaires. Ne jamais
+les nommer platement dans le summary ("je suis curieux") —
+les incarner via des faits.
 
 ──────────────────────────────────────────────────────────────────
 DEALBREAKERS
@@ -345,6 +387,13 @@ DEALBREAKERS
 Les critères rédhibitoires servent UNIQUEMENT à savoir quoi
 ne pas valoriser. Ne JAMAIS les écrire dans le CV ni les
 mentionner négativement.`
+
+  const variationDirectives = [
+    "",
+    "\n=== VARIATION DEMANDÉE ===\nC'est une RÉGÉNÉRATION. Le CV précédent n'a pas convenu. Change d'angle : reformule différemment le summary (autre fait du parcours mis en avant, autre tournure), réordonne ou réécris les puces, propose un regroupement de compétences différent si possible. Ne répète pas les mêmes formulations qu'une génération standard.",
+    "\n=== VARIATION DEMANDÉE ===\nC'est la 3e tentative. Le candidat cherche encore un angle qui lui parle. Essaie un summary plus court et plus direct, des puces encore plus factuelles (moins de contexte, plus d'actions). Privilégie le style B pour les compétences si pertinent (descriptions par domaine métier).",
+  ]
+  const variationHint = variationDirectives[Math.min(variationSeed, variationDirectives.length - 1)]
 
   const userPrompt = `=== OFFRE CIBLÉE ===
 Poste : ${job.title ?? '(non précisé)'}
@@ -395,21 +444,34 @@ ${personalityFit}
 Match valeurs ↔ culture :
 ${valuesFit}
 
+${variationHint}
+
 === TÂCHE ===
 Produis l'enrichissement structuré du CV.
 
-Avant d'écrire une puce, fais ce contrôle mental :
-  1. Mon verbe d'action est-il puissant et autorisé ?
-  2. L'objet de la puce est-il concret ?
-  3. La puce s'appuie-t-elle uniquement sur les faits source ?
-  4. Met-elle en avant ce qui matche l'offre ?
-  5. Est-elle plus courte que 30 mots ?
+Avant d'écrire une puce d'expérience, vérifie :
+  1. Ai-je VRAIMENT reformulé (pas recopié la source mot
+     pour mot) ?
+  2. La puce met-elle en valeur l'action concrète et son objet ?
+  3. Mon verbe est-il simple (pas pompeux) ?
+  4. Aucun chiffre, client, équipe, résultat inventé ?
+  5. Aucune formule RH vide ("dans le cadre de", "a contribué
+     à", "j'ai eu l'occasion de") ?
+  6. Entre 10 et 25 mots ?
 
-Si "non" à l'une de ces questions : reformule. Si la donnée
-source est trop maigre, écris moins de puces — qualité > volume.
+Si "non" à l'une de ces questions : reformule. Si la source
+est trop maigre pour produire 3-4 puces valables, écris-en
+moins — qualité > volume.
 
-Retourne le CV en JSON structuré avec les sections :
-headline, summary, experiences, softSkills, hardSkills, formation.`
+Avant d'écrire le summary, vérifie :
+  - Est-ce que ça sonne comme quelqu'un qui parle, pas comme
+    un CV ?
+  - Aucun mot interdit ("passionné", "à l'aise", "fort de",
+    "motivé", "dynamique") ?
+  - 1 à 2 phrases max, 20 à 40 mots ? (Court !)
+
+Retourne le CV structuré : headline, summary, softSkills,
+experienceBullets, skillsByDomain.`
 
   let enrichment: CVEnrichment
   try {
@@ -418,7 +480,7 @@ headline, summary, experiences, softSkills, hardSkills, formation.`
       schema: enrichmentSchema,
       system: systemPrompt,
       prompt: userPrompt,
-      temperature: 0.65,
+      temperature: Math.min(0.65 + variationSeed * 0.15, 0.95),
     })
     enrichment = result.object
   } catch (err) {
@@ -427,20 +489,27 @@ headline, summary, experiences, softSkills, hardSkills, formation.`
   }
 
   // Garde-fous post-IA -----------------------------------------------------
-  const providedSet = new Set(skillsRaw)
-  const enrichedHighlighted = enrichment.skillsHighlighted.filter((s) => providedSet.has(s))
-  const enrichedOthers = enrichment.skillsOthers.filter((s) => providedSet.has(s))
-  const enrichedCoverage = new Set([...enrichedHighlighted, ...enrichedOthers])
-  let finalSkills = { highlighted: enrichedHighlighted, others: enrichedOthers }
-  const missing = skillsRaw.filter((s) => !enrichedCoverage.has(s))
-  if (skillsRaw.length > 0 && missing.length / skillsRaw.length > 0.3) {
-    finalSkills = partitionSkillsByRelevance(skillsRaw, job.description)
-  } else if (missing.length > 0) {
-    finalSkills = {
-      highlighted: enrichedHighlighted,
-      others: [...enrichedOthers, ...missing],
-    }
-  }
+  // Compétences : on accepte la liste IA, mais on s'assure qu'aucune
+  // compétence brute n'est complètement perdue. Les manquantes sont
+  // ajoutées en fin de liste.
+  const cleanedSkills = enrichment.skills
+    .map((s) => s.trim())
+    .filter(Boolean)
+
+  const normalize = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+  const usedNormalized = new Set(cleanedSkills.map(normalize))
+  const missingSkills = skillsRaw
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0 && !usedNormalized.has(normalize(s)))
+  const finalSkills =
+    cleanedSkills.length > 0
+      ? [...cleanedSkills, ...missingSkills]
+      : skillsRaw.map((s) => s.trim()).filter(Boolean)
 
   const bulletsByIndex = new Map<number, string[]>()
   for (const item of enrichment.experienceBullets) {
@@ -467,5 +536,6 @@ headline, summary, experiences, softSkills, hardSkills, formation.`
     softSkills: enrichment.softSkills.map((s) => s.trim()).filter(Boolean),
     experiences: enrichedExperiences,
     skills: finalSkills,
+    interests: cv.interests ?? [],
   }
 }
