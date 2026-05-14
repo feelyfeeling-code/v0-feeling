@@ -35,16 +35,15 @@ export interface CVData {
     fields: string[]
     graduationDate: string
   }>
-  /** Compétences techniques classées par pertinence avec l'offre. */
-  skills: {
-    highlighted: string[]
-    others: string[]
-  }
+  /** Compétences — liste plate. */
+  skills: string[]
   /**
-   * Soft skills dérivées des traits dominants + valeurs (3-6 entrées).
+   * Qualités dérivées des traits dominants + valeurs (3-6 entrées).
    * Vide tant que l'enrichissement IA n'a pas tourné.
    */
   softSkills: string[]
+  /** Centres d'intérêt — éditable par l'utilisateur, vide par défaut. */
+  interests: string[]
   /** Valeurs sélectionnées en libellés lisibles. */
   values: string[]
 }
@@ -167,32 +166,40 @@ const EDUCATION_LEVEL_LABELS: Record<string, string> = {
 }
 
 /**
- * Partage les compétences en deux listes : celles qui apparaissent dans
- * la description de l'offre (match insensible casse/accents) et le reste.
- * Sert de fallback si l'IA ne tourne pas ; sinon l'IA reclasse plus finement.
+ * Convertit n'importe quel format de `skills` rencontré en DB vers le
+ * format actuel (liste plate `string[]`).
+ *
+ * Formats historiques supportés :
+ *   - `{ highlighted: string[]; others: string[] }` (1re version)
+ *   - `Array<{ domain: string; items: string[] }>`   (2e version, par domaine)
+ *   - `string[]`                                     (format actuel)
  */
-export function partitionSkillsByRelevance(
-  skills: string[],
-  jobDescription: string | null,
-): { highlighted: string[]; others: string[] } {
-  if (!jobDescription) {
-    return { highlighted: skills, others: [] }
+export function migrateLegacySkills(legacy: unknown): string[] {
+  if (Array.isArray(legacy)) {
+    return legacy
+      .flatMap((entry) => {
+        if (typeof entry === 'string') return [entry]
+        if (entry && typeof entry === 'object' && Array.isArray((entry as { items?: unknown }).items)) {
+          return ((entry as { items: unknown[] }).items).filter(
+            (s): s is string => typeof s === 'string',
+          )
+        }
+        return []
+      })
+      .map((s) => s.trim())
+      .filter(Boolean)
   }
-  const normalize = (s: string) =>
-    s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-  const normalizedDesc = normalize(jobDescription)
-  const highlighted: string[] = []
-  const others: string[] = []
-  for (const skill of skills) {
-    const normalizedSkill = normalize(skill.trim())
-    if (!normalizedSkill) continue
-    if (normalizedDesc.includes(normalizedSkill)) {
-      highlighted.push(skill)
-    } else {
-      others.push(skill)
-    }
+  if (legacy && typeof legacy === 'object') {
+    const obj = legacy as { highlighted?: unknown; others?: unknown }
+    return [
+      ...(Array.isArray(obj.highlighted) ? (obj.highlighted as unknown[]) : []),
+      ...(Array.isArray(obj.others) ? (obj.others as unknown[]) : []),
+    ]
+      .filter((s): s is string => typeof s === 'string')
+      .map((s) => s.trim())
+      .filter(Boolean)
   }
-  return { highlighted, others }
+  return []
 }
 
 /**
@@ -205,10 +212,7 @@ export function buildCV(params: BuildCVParams): CVData {
     [params.profile.first_name, params.profile.last_name].filter(Boolean).join(' ').trim() ||
     'Candidat·e'
 
-  const { highlighted, others } = partitionSkillsByRelevance(
-    params.skills,
-    params.job.description,
-  )
+  const skills = params.skills.map((s) => s.trim()).filter(Boolean)
 
   const valueLabels = params.values.map((v) => VALUE_LABELS[v] ?? v)
 
@@ -244,8 +248,9 @@ export function buildCV(params: BuildCVParams): CVData {
           },
         ]
       : [],
-    skills: { highlighted, others },
+    skills,
     softSkills: [],
+    interests: [],
     values: valueLabels,
   }
 }

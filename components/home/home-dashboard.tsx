@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { FeelingLogo, FeelingLogoInline } from '@/components/feeling-logo'
+import { FeelingLogoInline } from '@/components/feeling-logo'
+import { AuthHeader } from '@/components/auth-header'
 import { FeelyMascot } from '@/components/feely-mascot'
 import { Footer } from '@/components/footer'
 import { WelcomePopup } from './welcome-popup'
@@ -81,13 +81,6 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
       window.history.replaceState({}, '', '/accueil')
     }
   }, [searchParams])
-
-  const handleSignOut = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
-  }
 
   const handleMockAnalysis = async (preset: string) => {
     setIsAnalyzing(true)
@@ -228,23 +221,7 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
         />
       )}
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <FeelingLogo size="md" />
-
-          <div className="flex items-center gap-2">
-            <Link href="/profil">
-              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-                Mon profil
-              </Button>
-            </Link>
-            <Button variant="outline" onClick={handleSignOut}>
-              Déconnexion
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AuthHeader />
 
       {/* Main content */}
       <main className="flex-1">
@@ -417,38 +394,37 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
         </section>
     {/* Recent analyses */}
         {recentAnalyses.length > 0 && (
-          <section className="py-12 bg-muted/30">
+          <section className="py-12">
             <div className="container mx-auto px-4">
-              <h2 className="text-2xl font-bold mb-8">Tes dernières analyses</h2>
-              
-              <div className="grid gap-4">
+              <h2 className="text-2xl font-bold mb-8">Voici tes dernières analyses :</h2>
+
+              <div className="flex flex-col gap-4">
                 {recentAnalyses.map((analysis) => (
                   <Link
                     key={analysis.id}
                     href={`/resultats-complets/${analysis.id}`}
-                    className="bg-background rounded-xl p-6 border border-border hover:border-primary/50 transition-colors flex items-center justify-between group"
+                    className="bg-background rounded-2xl px-6 py-5 border border-border hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-between gap-6 group"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium group-hover:text-primary transition-colors">
-                          {analysis.job_title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">{analysis.company_name}</p>
-                      </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Date de l&apos;analyse :{' '}
+                        {new Date(analysis.created_at).toLocaleDateString(
+                          'fr-FR',
+                        )}
+                      </p>
+                      <h3 className="font-bold text-base sm:text-lg uppercase tracking-wide truncate">
+                        {analysis.job_title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {analysis.company_name}
+                      </p>
                     </div>
-                    
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <div className="text-2xl font-bold">{computeOverallScore(analysis)}%</div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          {new Date(analysis.created_at).toLocaleDateString('fr-FR')}
-                        </div>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+
+                    <div className="flex items-center gap-6 shrink-0">
+                      <span className="text-2xl sm:text-3xl font-bold">
+                        {computeOverallScore(analysis)}%
+                      </span>
+                      <ArrowRight className="w-6 h-6 text-foreground transition-transform group-hover:translate-x-1" />
                     </div>
                   </Link>
                 ))}

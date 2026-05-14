@@ -65,11 +65,6 @@ const styles = StyleSheet.create({
     color: COLORS.ink,
     marginBottom: 22,
   },
-  salutation: {
-    fontSize: 11,
-    color: COLORS.body,
-    marginBottom: 14,
-  },
   paragraph: {
     fontSize: 11,
     color: COLORS.body,
@@ -77,16 +72,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: 'justify',
   },
-  closing: {
-    fontSize: 11,
-    color: COLORS.body,
-    marginTop: 14,
-    marginBottom: 4,
-  },
   signature: {
     fontFamily: 'Times-Bold',
     fontSize: 11,
     color: COLORS.ink,
+    marginTop: 18,
   },
 })
 
@@ -135,21 +125,14 @@ export function CoverLetterPdfDocument({ body, candidate, job }: Props) {
           </Text>
         )}
 
-        {/* ── Salutation ───────────────────────────────────────────────── */}
-        <Text style={styles.salutation}>Madame, Monsieur,</Text>
-
-        {/* ── Corps ────────────────────────────────────────────────────── */}
+        {/* ── Corps généré (inclut salutation + formule de politesse) ── */}
         {paragraphs.map((p, i) => (
           <Text key={i} style={styles.paragraph}>
             {p}
           </Text>
         ))}
 
-        {/* ── Formule de politesse + signature ─────────────────────────── */}
-        <Text style={styles.closing}>
-          Je vous prie d&apos;agréer, Madame, Monsieur, l&apos;expression de mes
-          salutations distinguées.
-        </Text>
+        {/* ── Signature (le nom du candidat est ajouté ici, pas dans le corps) ── */}
         <Text style={styles.signature}>{candidate.fullName}</Text>
       </Page>
     </Document>

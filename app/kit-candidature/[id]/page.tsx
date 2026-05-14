@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { KitCandidatureView } from '@/components/kit/kit-candidature-view'
+import { migrateLegacySkills, type CVData } from '@/lib/kit/cv-builder'
 
 export const metadata = {
   title: 'Kit de candidature - Feeling',
@@ -50,6 +51,20 @@ export default async function KitCandidaturePage({ params }: Props) {
     [profileResult.data?.first_name, profileResult.data?.last_name].filter(Boolean).join(' ').trim() ||
     'Candidat·e'
 
+  // Adapte un CV sauvegardé au nouveau schéma : `skills` est désormais
+  // un tableau de domaines, et `interests` est un nouveau champ. Cela évite
+  // de casser l'affichage des kits générés avant la refonte.
+  const initialCv: CVData | null = kitResult.data?.cv_data
+    ? (() => {
+        const raw = kitResult.data!.cv_data as Record<string, unknown>
+        return {
+          ...(raw as unknown as CVData),
+          skills: migrateLegacySkills(raw.skills),
+          interests: Array.isArray(raw.interests) ? (raw.interests as string[]) : [],
+        }
+      })()
+    : null
+
   return (
     <KitCandidatureView
       analysis={{
@@ -62,7 +77,7 @@ export default async function KitCandidaturePage({ params }: Props) {
         fullName: candidateFullName,
         email: profileResult.data?.email ?? null,
       }}
-      initialCv={kitResult.data?.cv_data ?? null}
+      initialCv={initialCv}
       initialCoverLetter={kitResult.data?.cover_letter ?? ''}
     />
   )
