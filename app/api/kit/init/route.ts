@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { buildCV } from '@/lib/kit/cv-builder'
+import { buildCV, migrateLegacySkills } from '@/lib/kit/cv-builder'
 import { enrichCVWithAI } from '@/lib/kit/ai-cv-enricher'
 
 export async function POST(request: Request) {
   try {
-    const { analysisId } = await request.json()
+    const { analysisId, forceRegenerate } = await request.json()
     if (!analysisId) {
       return NextResponse.json({ error: 'analysisId requis' }, { status: 400 })
     }
@@ -37,12 +37,67 @@ export async function POST(request: Request) {
       .eq('analysis_id', analysisId)
       .maybeSingle()
 
-    // Un kit est "nouveau format" s'il a softSkills. Sinon, on régénère.
+    // Un kit est "enrichi" s'il a softSkills défini (l'IA a tourné au moins
+    // une fois). On migre alors `skills` (qui peut être l'un des trois
+    // formats historiques) et `interests` avant de renvoyer, pour rester
+    // compatible avec les kits sauvegardés avant la refonte.
     const cvData = existingKit?.cv_data as Record<string, unknown> | undefined
     const isEnriched = cvData && Array.isArray(cvData.softSkills)
-    if (existingKit && existingKit.cv_data && isEnriched) {
+    // Détecte un ancien format : skills contient des objets (pas des strings).
+    const hasLegacySkillsShape =
+      cvData && Array.isArray(cvData.skills)
+        ? (cvData.skills as unknown[]).some((s) => typeof s !== 'string')
+        : !!cvData?.skills && !Array.isArray(cvData.skills)
+    if (!forceRegenerate && existingKit && cvData && isEnriched) {
+      let migratedSkills = migrateLegacySkills(cvData.skills)
+
+      // Si on vient d'aplatir depuis un ancien format, on récolte les
+      // compétences saisies par l'utilisateur dans son profil pour
+      // s'assurer qu'aucune ne manque dans le bloc. On persiste ensuite
+      // le résultat : sur les chargements suivants (nouveau format), on
+      // respectera les suppressions manuelles de l'utilisateur.
+      let shouldPersistMigration = false
+      if (hasLegacySkillsShape) {
+        const { data: techSkills } = await supabase
+          .from('technical_skills')
+          .select('skills')
+          .eq('user_id', userId)
+          .maybeSingle()
+        const profileSkills: string[] = Array.isArray(techSkills?.skills)
+          ? (techSkills!.skills as string[]).filter((s) => typeof s === 'string')
+          : []
+        const normalize = (s: string) =>
+          s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+        const present = new Set(migratedSkills.map(normalize))
+        const missing = profileSkills
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0 && !present.has(normalize(s)))
+        if (missing.length > 0) {
+          migratedSkills = [...migratedSkills, ...missing]
+        }
+        shouldPersistMigration = true
+      }
+
+      const migratedCv = {
+        ...cvData,
+        skills: migratedSkills,
+        interests: Array.isArray(cvData.interests) ? cvData.interests : [],
+      }
+
+      if (shouldPersistMigration) {
+        await supabase.from('application_kits').upsert(
+          {
+            user_id: userId,
+            analysis_id: analysisId,
+            cv_data: migratedCv,
+            cover_letter: existingKit.cover_letter ?? null,
+          },
+          { onConflict: 'user_id,analysis_id' },
+        )
+      }
+
       return NextResponse.json({
-        cv: existingKit.cv_data,
+        cv: migratedCv,
         coverLetter: existingKit.cover_letter ?? '',
         analysis: {
           id: analysis.id,
@@ -51,6 +106,12 @@ export async function POST(request: Request) {
         },
       })
     }
+
+    // Variation : 0 pour la première génération, 1+ pour les régénérations.
+    // La temperature augmente avec le seed et un directive de variation est
+    // injectée dans le prompt — ça suffit à produire un CV différent du
+    // précédent à chaque clic (pas besoin de persister un compteur).
+    const variationSeed = forceRegenerate ? 1 + Math.floor(Math.random() * 2) : 0
 
     const [
       profileResult,
@@ -156,6 +217,7 @@ export async function POST(request: Request) {
           ? analysis.values_analysis.strengths
           : [],
       },
+      variationSeed,
     })
 
     const { error: upsertError } = await supabase.from('application_kits').upsert(

@@ -164,7 +164,21 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
 
-  // ─── Bottom grid (skills / soft skills / values) ────────────────────────
+  // ─── Compétences (liste plate, pills) ───────────────────────────────────
+  pillSkill: {
+    backgroundColor: COLORS.primary,
+    color: COLORS.ink,
+    paddingTop: 2,
+    paddingBottom: 2,
+    paddingHorizontal: 6,
+    borderRadius: 2.5,
+    fontSize: 8.5,
+    marginRight: 3,
+    marginBottom: 3,
+    fontFamily: 'Helvetica-Bold',
+  },
+
+  // ─── Bottom grid (qualités / valeurs / centres d'intérêt) ───────────────
   bottomGrid: {
     flexDirection: 'row',
     gap: 14,
@@ -187,29 +201,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  pillHighlighted: {
-    backgroundColor: COLORS.primary,
-    color: COLORS.ink,
-    paddingTop: 2,
-    paddingBottom: 2,
-    paddingHorizontal: 6,
-    borderRadius: 2.5,
-    fontSize: 8.5,
-    marginRight: 3,
-    marginBottom: 3,
-    fontFamily: 'Helvetica-Bold',
-  },
-  pillNeutral: {
-    backgroundColor: '#F1F1F4',
-    color: COLORS.body,
-    paddingTop: 2,
-    paddingBottom: 2,
-    paddingHorizontal: 6,
-    borderRadius: 2.5,
-    fontSize: 8.5,
-    marginRight: 3,
-    marginBottom: 3,
-  },
   pillSoft: {
     backgroundColor: COLORS.secondary,
     color: COLORS.ink,
@@ -224,6 +215,17 @@ const styles = StyleSheet.create({
   pillValue: {
     backgroundColor: COLORS.accent,
     color: COLORS.ink,
+    paddingTop: 2,
+    paddingBottom: 2,
+    paddingHorizontal: 6,
+    borderRadius: 2.5,
+    fontSize: 8.5,
+    marginRight: 3,
+    marginBottom: 3,
+  },
+  pillInterest: {
+    backgroundColor: '#F1F1F4',
+    color: COLORS.body,
     paddingTop: 2,
     paddingBottom: 2,
     paddingHorizontal: 6,
@@ -260,10 +262,12 @@ export function CVPdfDocument({ cv }: { cv: CVData }) {
   if (cv.identity.email) contactItems.push(cv.identity.email)
   if (cv.identity.location) contactItems.push(cv.identity.location)
 
-  const hasHardSkills = cv.skills.highlighted.length > 0 || cv.skills.others.length > 0
+  const hasSkills = Array.isArray(cv.skills) && cv.skills.length > 0
   const hasSoftSkills = cv.softSkills && cv.softSkills.length > 0
   const hasValues = cv.values && cv.values.length > 0
-  const showBottomGrid = hasHardSkills || hasSoftSkills || hasValues
+  const hasInterests = Array.isArray(cv.interests) && cv.interests.length > 0
+  const showBottomGrid = hasSoftSkills || hasValues || hasInterests
+  const educationTitle = cv.education.length >= 2 ? 'Formations' : 'Formation'
 
   return (
     <Document>
@@ -349,19 +353,18 @@ export function CVPdfDocument({ cv }: { cv: CVData }) {
           </View>
         )}
 
-        {/* ── Formation ───────────────────────────────────────────────── */}
+        {/* ── Formation(s) ────────────────────────────────────────────── */}
         {cv.education.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionTitleRow}>
               <View style={styles.sectionAccentBar} />
-              <Text style={styles.sectionTitle}>Formation</Text>
+              <Text style={styles.sectionTitle}>{educationTitle}</Text>
             </View>
             {cv.education.map((edu, i) => (
               <View key={i} style={styles.educationItem}>
                 <Text style={styles.educationTitle}>
                   <Text style={styles.educationDiploma}>{edu.diploma}</Text>
-                  {' · '}
-                  {edu.level}
+                  {edu.level ? ` · ${edu.level}` : ''}
                 </Text>
                 <Text style={styles.educationDetail}>
                   {edu.school}
@@ -373,30 +376,29 @@ export function CVPdfDocument({ cv }: { cv: CVData }) {
           </View>
         )}
 
-        {/* ── Grille bas : Compétences / Soft / Valeurs ──────────────── */}
+        {/* ── Compétences (liste plate) ───────────────────────────────── */}
+        {hasSkills && (
+          <View style={styles.section}>
+            <View style={styles.sectionTitleRow}>
+              <View style={styles.sectionAccentBar} />
+              <Text style={styles.sectionTitle}>Compétences</Text>
+            </View>
+            <View style={styles.pillContainer}>
+              {cv.skills.map((s, i) => (
+                <Text key={i} style={styles.pillSkill}>
+                  {s}
+                </Text>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* ── Grille bas : Qualités / Valeurs / Centres d'intérêt ─────── */}
         {showBottomGrid && (
           <View style={styles.bottomGrid}>
-            {hasHardSkills && (
-              <View style={styles.gridColumn}>
-                <Text style={styles.gridColumnTitle}>Compétences</Text>
-                <View style={styles.pillContainer}>
-                  {cv.skills.highlighted.map((s, i) => (
-                    <Text key={`h-${i}`} style={styles.pillHighlighted}>
-                      {s}
-                    </Text>
-                  ))}
-                  {cv.skills.others.map((s, i) => (
-                    <Text key={`o-${i}`} style={styles.pillNeutral}>
-                      {s}
-                    </Text>
-                  ))}
-                </View>
-              </View>
-            )}
-
             {hasSoftSkills && (
               <View style={styles.gridColumn}>
-                <Text style={styles.gridColumnTitle}>Points forts</Text>
+                <Text style={styles.gridColumnTitle}>Qualités</Text>
                 <View style={styles.pillContainer}>
                   {cv.softSkills!.map((s, i) => (
                     <Text key={`s-${i}`} style={styles.pillSoft}>
@@ -414,6 +416,19 @@ export function CVPdfDocument({ cv }: { cv: CVData }) {
                   {cv.values.map((v, i) => (
                     <Text key={`v-${i}`} style={styles.pillValue}>
                       {v}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {hasInterests && (
+              <View style={styles.gridColumn}>
+                <Text style={styles.gridColumnTitle}>Centres d&apos;intérêt</Text>
+                <View style={styles.pillContainer}>
+                  {cv.interests!.map((it, i) => (
+                    <Text key={`i-${i}`} style={styles.pillInterest}>
+                      {it}
                     </Text>
                   ))}
                 </View>
