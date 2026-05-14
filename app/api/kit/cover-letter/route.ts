@@ -14,10 +14,14 @@ import {
 
 export async function POST(request: Request) {
   try {
-    const { analysisId } = await request.json()
+    const { analysisId, forceRegenerate } = await request.json()
     if (!analysisId) {
       return NextResponse.json({ error: 'analysisId requis' }, { status: 400 })
     }
+    // Variation : à chaque régénération, on bump la temperature et on
+    // injecte une directive d'angle alternatif pour ne pas reproduire
+    // la même lettre que la fois précédente.
+    const variationSeed = forceRegenerate ? 1 + Math.floor(Math.random() * 2) : 0
 
     const supabase = await createClient()
     const {
@@ -176,79 +180,121 @@ export async function POST(request: Request) {
 
     const jobDescription = (analysis.job_description ?? '').slice(0, 4000)
 
-    const systemPrompt = `Tu es un rédacteur d'élite spécialisé en lettres de motivation
-pour candidats francophones Bac+5 en début de carrière.
-Tu écris des lettres qui font la différence : naturelles,
-précises, ancrées dans des faits concrets, avec un angle qui
-parle directement à l'entreprise et au poste.
+    const systemPrompt = `Tu rédiges une lettre de motivation française
+classique, professionnelle, humaine et crédible.
 
-RÈGLES IMPÉRATIVES :
-- Tu écris à la première personne ("je"), en français
-  professionnel, chaleureux et précis.
+OBJECTIF : produire une vraie lettre de motivation qui respecte
+les codes d'une candidature française, pas un pitch marketing
+ni une réponse IA.
+
+──────────────────────────────────────────────────────────────────
+RÈGLES IMPÉRATIVES
+──────────────────────────────────────────────────────────────────
+- Tu écris à la première personne ("je"), en français.
+- Tu VOUVOIES l'entreprise et le recruteur ("vous", "votre").
+  JAMAIS de tutoiement.
 - Tu n'utilises JAMAIS de tirets cadratins (em-dashes "—").
-- Tu n'inventes JAMAIS d'informations absentes du profil.
-- Clichés INTERDITS : "dynamique", "motivé(e)", "passionné(e)",
-  "force de proposition", "à la recherche d'un nouveau défi",
-  "polyvalent", "rigoureux et organisé".
-- Aucun placeholder ([Nom], [Date], [Entreprise]).
-- Tu produis UNIQUEMENT le corps de la lettre : pas d'en-tête,
-  pas de "Madame, Monsieur", pas de signature.
-- Tu commences directement par le premier paragraphe.
+- Tu n'inventes JAMAIS d'informations absentes du profil
+  (chiffre, équipe, durée, client, technologie, résultat).
+- Tu ne fais JAMAIS de promesses excessives.
+- Tu ne paraphrases PAS lourdement la description de l'offre.
 
 ──────────────────────────────────────────────────────────────────
-TRAITEMENT DES TRAITS DE PERSONNALITÉ FEELING
+RÈGLE CARDINALE : COMMENCER PAR LE CANDIDAT, PAS PAR L'ENTREPRISE
 ──────────────────────────────────────────────────────────────────
-Le candidat a 3 traits pondérés (50% / 30% / 20%).
+Le premier paragraphe doit parler du CANDIDAT et du POSTE.
+Il ne doit JAMAIS commencer par une mini-présentation
+publicitaire de l'entreprise du genre :
+  ✘ "Hiflow révolutionne la livraison automobile..."
+  ✘ "Leader sur son marché, votre entreprise..."
+  ✘ "Votre entreprise dynamique et innovante m'attire..."
 
-- Trait dominant (50%) : doit transparaître dans le paragraphe 2,
-  incarné dans une réalisation concrète. C'est l'angle humain
-  principal de la lettre.
-- Trait secondaire (30%) : glisse-le naturellement dans
-  le paragraphe 2 ou 3.
-- Trait de fond (20%) : seulement si pertinent et naturel.
-- Ne jamais les nommer platement. Les montrer, pas les dire.
-- Si le test MBTI/DISC est renseigné, utilise-le pour affiner
-  le ton de la lettre sans le mentionner explicitement.
+Démarre par l'intention du candidat. Tu peux mentionner ce
+qui t'intéresse dans le poste ou l'entreprise, mais sobrement,
+en une demi-phrase glissée dans l'intro — pas en hook commercial.
 
-──────────────────────────────────────────────────────────────────
-TRAITEMENT DES VALEURS FEELING
-──────────────────────────────────────────────────────────────────
-Le candidat a jusqu'à 3 valeurs professionnelles déclarées.
-- Mobilise la valeur la plus alignée avec la culture de
-  l'entreprise dans le paragraphe 3.
-- Ancre-la dans un fait ou une posture concrète, pas une
-  déclaration d'intention.
-- Si une valeur entre en tension avec l'offre : ne pas
-  la mentionner.
+✔ Exemple cible d'intro :
+  "Je vous adresse ma candidature pour le poste de Product
+  Designer, qui a retenu mon attention par la place donnée
+  à l'expérience utilisateur et à l'amélioration continue
+  des parcours."
 
 ──────────────────────────────────────────────────────────────────
-STRUCTURE OBLIGATOIRE — 3 PARAGRAPHES
+MOTS ET FORMULES INTERDITS
 ──────────────────────────────────────────────────────────────────
-Paragraphe 1 (2-4 phrases) — Hook :
-  Mentionne un élément concret de l'offre ou de l'entreprise
-  qui résonne avec le profil. Évite "Je vous écris pour...".
-  Entre par l'angle qui rend cette candidature pertinente.
-
-Paragraphe 2 (5-8 phrases) — Bridge profil ↔ poste :
-  Cite AU MOINS UNE expérience nommée (entreprise + mission).
-  Incarne le trait dominant via cette expérience.
-  Mobilise UNE valeur ancrée dans une réalisation.
-  Si pertinent, glisse une compétence technique de l'offre.
-
-Paragraphe 3 (2-3 phrases) — Projection :
-  Pourquoi cette entreprise spécifiquement (culture, ambition,
-  secteur) en lien avec les valeurs du candidat.
-  Propose un échange. Sans formule creuse.
+✘ Verbes commerciaux : "révolutionne", "transforme",
+  "s'impose comme", "se positionne comme", "incarne"
+  (sauf si réellement nécessaire et formulé très sobrement).
+✘ Hooks IA : "Votre entreprise dynamique et innovante m'attire
+  particulièrement", "Je suis passionné par votre secteur",
+  "Je souhaite mettre mes compétences au service de votre
+  entreprise", "C'est avec un grand intérêt".
+✘ Clichés candidats : "dynamique", "motivé(e)", "passionné(e)",
+  "force de proposition", "à l'aise avec", "polyvalent",
+  "rigoureux et organisé", "à la recherche d'un nouveau défi".
+✘ Superlatifs creux : "excellent", "remarquable", "exceptionnel".
+✘ Promesses excessives : "porter l'expérience au niveau
+  supérieur", "apporter une vision unique".
+✘ Placeholders ([Nom], [Date], [Entreprise]).
 
 ──────────────────────────────────────────────────────────────────
-CONTRAINTES DE STYLE
+STRUCTURE OBLIGATOIRE (la lettre complète, telle qu'attendue)
 ──────────────────────────────────────────────────────────────────
-- Longueur : 240 à 340 mots.
-- Pas de répétition du même verbe d'introduction.
-- Verbes d'action concrets et conjugués.
-- Transitions dosées ("Par ailleurs" autorisé mais pas systématique).
-- DEALBREAKERS : usage interne uniquement. Ne JAMAIS les
-  mentionner dans la lettre, même en creux.`
+Tu produis la lettre COMPLÈTE avec :
+
+1. FORMULE D'APPEL (1re ligne) :
+   "Madame, Monsieur,"
+
+2. PARAGRAPHE D'INTRODUCTION (2-3 phrases) :
+   Pourquoi tu écris. Le poste visé. Ce qui t'intéresse —
+   formulé sobrement, ancré sur un élément concret du poste
+   ou de l'entreprise (pas un slogan).
+
+3. PARAGRAPHE CANDIDAT (3-5 phrases) :
+   1 à 2 expériences pertinentes nommées (entreprise +
+   mission). Verbes au passé composé simple : "j'ai mené",
+   "j'ai conçu", "j'ai géré", "j'ai construit", "j'ai
+   accompagné". Faits concrets. Pas de liste de compétences
+   sèche. Lien avec les attentes du poste.
+
+4. PARAGRAPHE PROJECTION (2-3 phrases) :
+   Ce que tu peux apporter à l'entreprise au regard de ton
+   parcours et des besoins identifiés dans l'offre.
+   Sobre, crédible, pas de promesse marketing.
+
+5. PARAGRAPHE DE CONCLUSION (1 phrase) :
+   Proposer un échange.
+   ✔ Exemple : "Je serais ravi d'échanger avec vous afin
+   de vous présenter plus en détail ma motivation et la
+   manière dont mon parcours peut répondre aux besoins
+   du poste."
+
+6. FORMULE DE POLITESSE (sur sa propre ligne) :
+   "Je vous prie d'agréer, Madame, Monsieur, l'expression
+   de mes salutations distinguées."
+
+PAS de nom de candidat / signature à la fin (le PDF l'ajoute).
+
+──────────────────────────────────────────────────────────────────
+USAGE DES TRAITS ET VALEURS FEELING
+──────────────────────────────────────────────────────────────────
+Les traits Feeling (pondérés 50/30/20) et les valeurs te
+servent à colorer le ton et choisir QUELLES expériences citer.
+Ne jamais les nommer platement ("je suis curieux", "j'attache
+de l'importance à l'autonomie"). Les incarner via des faits.
+
+Les dealbreakers servent UNIQUEMENT à savoir quoi ne pas
+valoriser. Ne JAMAIS les mentionner dans la lettre, même
+en creux.
+
+──────────────────────────────────────────────────────────────────
+STYLE ET LONGUEUR
+──────────────────────────────────────────────────────────────────
+- Phrases fluides, professionnelles, humaines.
+- Pas de langage familier. Pas de blabla.
+- Cible 250 à 350 mots, hors formule d'appel et politesse.
+- 4 à 5 paragraphes courts.
+- La lettre doit tenir sur une page A4 avec marges.`
 
     const userPrompt = `=== ENTREPRISE / OFFRE ===
 Poste : ${analysis.job_title ?? '(non précisé)'}
@@ -295,19 +341,47 @@ ${personalityFit}
 Match valeurs ↔ culture :
 ${valuesFit}
 
-=== TÂCHE ===
-Rédige la lettre. Exploite vraiment tout : le trait dominant
-incarné dans une expérience nommée, une valeur ancrée dans
-un fait, un élément concret de l'offre.
+${
+  variationSeed > 0
+    ? `=== VARIATION DEMANDÉE ===
+C'est une RÉGÉNÉRATION. La lettre précédente n'a pas convenu.
+Change d'angle : choisis une autre expérience à mettre en
+avant (si plusieurs sont disponibles), reformule le hook du
+paragraphe 1 différemment (autre élément concret de
+l'entreprise), tourne le paragraphe 3 autrement. Ne reprends
+pas les mêmes phrases qu'une génération standard.
 
-Ne renvoie QUE le corps (3 paragraphes, pas d'en-tête,
-pas de signature). Commence directement par le premier paragraphe.`
+`
+    : ''
+}=== TÂCHE ===
+Rédige la lettre COMPLÈTE (formule d'appel, 4 paragraphes,
+formule de politesse) en respectant la structure imposée.
+
+Avant de rédiger, vérifie mentalement :
+  1. Première ligne = "Madame, Monsieur," ?
+  2. Para d'intro : commence par MOI/le poste, PAS par une
+     mini-présentation publicitaire de l'entreprise ?
+  3. Para candidat : 1-2 expériences nommées (entreprise +
+     mission) ? Verbes au passé composé simple ? Pas de
+     liste de compétences sèche ?
+  4. Para projection : sobre, crédible, pas de promesse
+     marketing ?
+  5. Para conclusion : 1 phrase qui propose un échange ?
+  6. Dernière ligne = "Je vous prie d'agréer, Madame,
+     Monsieur, l'expression de mes salutations distinguées." ?
+  7. Aucun mot ou formule interdite (révolutionne, transforme,
+     dynamique, passionné, etc.) ?
+  8. 250 à 350 mots ?
+
+Sépare chaque paragraphe par une ligne vide. PAS de nom de
+candidat à la fin (la signature est ajoutée par le PDF).
+Commence directement par "Madame, Monsieur,".`
 
     const { text } = await generateText({
       model: anthropic('claude-sonnet-4-20250514'),
       system: systemPrompt,
       prompt: userPrompt,
-      temperature: 0.75,
+      temperature: Math.min(0.75 + variationSeed * 0.15, 0.95),
     })
 
     const coverLetter = text.trim().replace(/—/g, '-')
