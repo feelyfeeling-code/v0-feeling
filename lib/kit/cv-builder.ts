@@ -9,6 +9,7 @@ export interface CVData {
   identity: {
     fullName: string
     email: string | null
+    phone: string | null
     location: string | null
   }
   /** Phrase de positionnement (1 ligne, idéalement enrichie par l'IA). */
@@ -217,6 +218,7 @@ export function buildCV(params: BuildCVParams): CVData {
     identity: {
       fullName,
       email: params.profile.email,
+      phone: null,
       location: params.dreamJob?.locations?.[0] ?? params.job.location ?? null,
     },
     headline: params.job.title
