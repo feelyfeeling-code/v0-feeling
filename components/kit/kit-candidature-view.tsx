@@ -33,6 +33,7 @@ function normalizeCv(cv: CVData | null): CVData | null {
     ...cv,
     skills: migrateLegacySkills(cv.skills as unknown),
     interests: Array.isArray(cv.interests) ? cv.interests : [],
+    languages: Array.isArray(cv.languages) ? cv.languages : [],
   };
 }
 
@@ -939,13 +940,15 @@ function CVEditor({
         />
       </section>
 
-      {/* Values */}
+      {/* Languages */}
       <section className={SECTION_CARD}>
-        <SectionTitle>Valeurs professionnelles</SectionTitle>
+        <SectionTitle>Langues</SectionTitle>
         <EditableTagList
-          values={cv.values ?? []}
-          onChange={(next) => updateCv((prev) => ({ ...prev, values: next }))}
-          placeholder="Ex : Autonomie, impact concret..."
+          values={cv.languages ?? []}
+          onChange={(next) =>
+            updateCv((prev) => ({ ...prev, languages: next }))
+          }
+          placeholder="Ex : Français (natif), Anglais (courant)"
           accent="accent"
         />
       </section>
