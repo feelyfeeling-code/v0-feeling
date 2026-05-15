@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   ArrowLeft,
+  ChevronDown,
   Download,
   FileText,
   Mail,
@@ -524,27 +525,27 @@ function CopyPasteSection({ cv }: { cv: CVData }) {
   }
 
   return (
-    <section className="rounded-2xl border border-border bg-muted/40 overflow-hidden">
+    <section className="rounded-2xl border border-border bg-muted/40 overflow-hidden cursor-pointer ">
       {/* Header — always visible, click to toggle */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between p-5 bg-muted/60 hover:bg-muted/80 transition-colors text-left"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-background flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3 cursor-pointer ">
+          <div className="w-9 h-9 rounded-full bg-background flex items-center justify-center shrink-0 ">
             <ClipboardList className="w-4 h-4 text-foreground" />
           </div>
           <div>
-            <h2 className="font-bold text-lg">Version texte à coller</h2>
+            <h2 className="font-bold text-lg">CV - Version texte à coller</h2>
             <p className="text-xs text-muted-foreground">
               Copie ce texte pour l&apos;utiliser dans un autre éditeur de CV
             </p>
           </div>
         </div>
-        <ArrowLeft
-          className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ${
-            open ? "-rotate-90" : "rotate-180"
+        <ChevronDown
+          className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 cursor-pointer ${
+            open ? "rotate-180" : "rotate-0"
           }`}
         />
       </button>
