@@ -153,10 +153,9 @@ export function KitCandidatureView({
         throw new Error(data.error || "Erreur lors de la génération");
       skipFirstLetterSave.current = true;
       setCoverLetter(data.coverLetter);
-      toast.success(
-        forceRegenerate ? "Lettre régénérée" : "Lettre générée",
-        { id: toastId },
-      );
+      toast.success(forceRegenerate ? "Lettre régénérée" : "Lettre générée", {
+        id: toastId,
+      });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erreur", { id: toastId });
     } finally {
@@ -847,7 +846,9 @@ function CVEditor({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor={`edu-date-${i}`}>Date d&apos;obtention</Label>
+                    <Label htmlFor={`edu-date-${i}`}>
+                      Date d&apos;obtention
+                    </Label>
                     <Input
                       id={`edu-date-${i}`}
                       type="month"
@@ -948,7 +949,7 @@ function CVEditor({
           onChange={(next) =>
             updateCv((prev) => ({ ...prev, languages: next }))
           }
-          placeholder="Ex : Français (natif), Anglais (courant)"
+          placeholder="Ex : Français, Anglais"
           accent="accent"
         />
       </section>
@@ -957,9 +958,7 @@ function CVEditor({
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="text-base font-bold text-foreground">{children}</h3>
-  );
+  return <h3 className="text-base font-bold text-foreground">{children}</h3>;
 }
 
 // Liste éditable d'étiquettes (qualités, compétences, centres d'intérêt).
