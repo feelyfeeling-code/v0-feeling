@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   ArrowLeft,
+  ChevronDown,
   Download,
   FileText,
   Mail,
@@ -19,6 +20,9 @@ import {
   Trash2,
   RotateCw,
   X,
+  Copy,
+  Check,
+  ClipboardList,
 } from "lucide-react";
 import type { CVData } from "@/lib/kit/cv-builder";
 import { formatPeriod, migrateLegacySkills } from "@/lib/kit/cv-builder";
@@ -31,6 +35,10 @@ function normalizeCv(cv: CVData | null): CVData | null {
   if (!cv) return cv;
   return {
     ...cv,
+    identity: {
+      ...cv.identity,
+      phone: cv.identity.phone ?? null,
+    },
     skills: migrateLegacySkills(cv.skills as unknown),
     interests: Array.isArray(cv.interests) ? cv.interests : [],
     languages: Array.isArray(cv.languages) ? cv.languages : [],
@@ -321,6 +329,9 @@ export function KitCandidatureView({
             </div>
           </section>
 
+          {/* Copy-paste section */}
+          {cv && <CopyPasteSection cv={cv} />}
+
           {/* Cover letter section */}
           <section className="rounded-2xl border border-border bg-muted/40 overflow-hidden">
             <div className="flex items-center justify-between p-5 border-b border-border bg-muted/60">
@@ -408,6 +419,173 @@ export function KitCandidatureView({
       <Footer />
     </div>
   );
+}
+
+// ─── Plain-text CV for copy-paste ───────────────────────────────────────────
+function cvToPlainText(cv: CVData): string {
+  const lines: string[] = []
+  const sep = "─".repeat(50)
+
+  // Header
+  lines.push(cv.identity.fullName)
+  if (cv.headline) lines.push(cv.headline)
+  lines.push("")
+
+  const contact = [
+    cv.identity.email,
+    cv.identity.phone,
+    cv.identity.location,
+  ].filter(Boolean)
+  if (contact.length) lines.push(contact.join("  ·  "))
+  lines.push("")
+
+  // Summary
+  if (cv.summary) {
+    lines.push(sep)
+    lines.push("PROFIL")
+    lines.push(sep)
+    lines.push(cv.summary)
+    lines.push("")
+  }
+
+  // Experiences
+  if (cv.experiences.length > 0) {
+    lines.push(sep)
+    lines.push("EXPÉRIENCES PROFESSIONNELLES")
+    lines.push(sep)
+    for (const exp of cv.experiences) {
+      const period = formatPeriod(exp.startDate, exp.endDate, exp.isCurrent)
+      const where = exp.location ? `, ${exp.location}` : ""
+      lines.push(`${exp.jobTitle}  |  ${exp.companyName}${where}  |  ${period}`)
+      if (exp.mainTasks) {
+        const bullets = exp.mainTasks
+          .split(/\r?\n/)
+          .map((l) => l.replace(/^\s*[-•*]\s*/, "").trim())
+          .filter(Boolean)
+        for (const b of bullets) lines.push(`• ${b}`)
+      }
+      lines.push("")
+    }
+  }
+
+  // Education
+  if (cv.education.length > 0) {
+    lines.push(sep)
+    lines.push("FORMATION")
+    lines.push(sep)
+    for (const edu of cv.education) {
+      const year = edu.graduationDate ? edu.graduationDate.slice(0, 7) : ""
+      const level = edu.level ? ` (${edu.level})` : ""
+      lines.push(`${edu.diploma}${level}  |  ${edu.school}${year ? `  |  ${year}` : ""}`)
+      if (edu.fields?.length) lines.push(`Spécialités : ${edu.fields.join(", ")}`)
+      lines.push("")
+    }
+  }
+
+  // Skills
+  if (cv.skills?.length) {
+    lines.push(sep)
+    lines.push("COMPÉTENCES")
+    lines.push(sep)
+    lines.push(cv.skills.join("  ·  "))
+    lines.push("")
+  }
+
+  // Soft skills
+  if (cv.softSkills?.length) {
+    lines.push(`QUALITÉS : ${cv.softSkills.join("  ·  ")}`)
+  }
+
+  // Languages
+  if (cv.languages?.length) {
+    lines.push(`LANGUES : ${cv.languages.join("  ·  ")}`)
+  }
+
+  // Interests
+  if (cv.interests?.length) {
+    lines.push(`CENTRES D'INTÉRÊT : ${cv.interests.join("  ·  ")}`)
+  }
+
+  return lines.join("\n")
+}
+
+function CopyPasteSection({ cv }: { cv: CVData }) {
+  const [open, setOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const text = cvToPlainText(cv)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error("Impossible de copier")
+    }
+  }
+
+  return (
+    <section className="rounded-2xl border border-border bg-muted/40 overflow-hidden cursor-pointer ">
+      {/* Header — always visible, click to toggle */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between p-5 bg-muted/60 hover:bg-muted/80 transition-colors text-left"
+      >
+        <div className="flex items-center gap-3 cursor-pointer ">
+          <div className="w-9 h-9 rounded-full bg-background flex items-center justify-center shrink-0 ">
+            <ClipboardList className="w-4 h-4 text-foreground" />
+          </div>
+          <div>
+            <h2 className="font-bold text-lg">CV - Version texte à coller</h2>
+            <p className="text-xs text-muted-foreground">
+              Copie ce texte pour l&apos;utiliser dans un autre éditeur de CV
+            </p>
+          </div>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 cursor-pointer ${
+            open ? "rotate-180" : "rotate-0"
+          }`}
+        />
+      </button>
+
+      {/* Collapsible body */}
+      {open && (
+        <div className="p-5 border-t border-border space-y-3">
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCopy}
+              className="h-10 rounded-full px-4 gap-2"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="text-green-600 text-sm font-medium">Copié !</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span className="text-sm font-medium">Copier</span>
+                </>
+              )}
+            </Button>
+          </div>
+          <Textarea
+            value={text}
+            readOnly
+            rows={20}
+            className="font-mono text-xs leading-relaxed bg-background resize-none"
+          />
+          <p className="text-xs text-muted-foreground">
+            Colle ce contenu dans Canva, Word, Google Docs ou tout autre éditeur de CV.
+          </p>
+        </div>
+      )}
+    </section>
+  )
 }
 
 // ─── CV editor ──────────────────────────────────────────────────────────
@@ -511,23 +689,42 @@ function CVEditor({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="cv-city">Ville</Label>
+            <Label htmlFor="cv-phone">Téléphone</Label>
             <Input
-              id="cv-city"
-              value={cv.identity.location ?? ""}
+              id="cv-phone"
+              type="tel"
+              value={cv.identity.phone ?? ""}
               onChange={(e) =>
                 updateCv((prev) => ({
                   ...prev,
                   identity: {
                     ...prev.identity,
-                    location: e.target.value || null,
+                    phone: e.target.value || null,
                   },
                 }))
               }
-              placeholder="Paris"
+              placeholder="06 00 00 00 00"
               className={INPUT_PILL}
             />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cv-city">Ville / Adresse courte</Label>
+          <Input
+            id="cv-city"
+            value={cv.identity.location ?? ""}
+            onChange={(e) =>
+              updateCv((prev) => ({
+                ...prev,
+                identity: {
+                  ...prev.identity,
+                  location: e.target.value || null,
+                },
+              }))
+            }
+            placeholder="Paris, 75011"
+            className={INPUT_PILL}
+          />
         </div>
       </section>
 
