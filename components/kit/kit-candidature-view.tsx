@@ -328,6 +328,9 @@ export function KitCandidatureView({
             </div>
           </section>
 
+          {/* Copy-paste section */}
+          {cv && <CopyPasteSection cv={cv} />}
+
           {/* Cover letter section */}
           <section className="rounded-2xl border border-border bg-muted/40 overflow-hidden">
             <div className="flex items-center justify-between p-5 border-b border-border bg-muted/60">
@@ -409,8 +412,6 @@ export function KitCandidatureView({
               )}
             </div>
           </section>
-          {/* Copy-paste section */}
-          {cv && <CopyPasteSection cv={cv} />}
         </div>
       </main>
 
@@ -508,6 +509,7 @@ function cvToPlainText(cv: CVData): string {
 }
 
 function CopyPasteSection({ cv }: { cv: CVData }) {
+  const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const text = cvToPlainText(cv)
 
@@ -523,9 +525,14 @@ function CopyPasteSection({ cv }: { cv: CVData }) {
 
   return (
     <section className="rounded-2xl border border-border bg-muted/40 overflow-hidden">
-      <div className="flex items-center justify-between p-5 border-b border-border bg-muted/60">
+      {/* Header — always visible, click to toggle */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between p-5 bg-muted/60 hover:bg-muted/80 transition-colors text-left"
+      >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-background flex items-center justify-center">
+          <div className="w-9 h-9 rounded-full bg-background flex items-center justify-center shrink-0">
             <ClipboardList className="w-4 h-4 text-foreground" />
           </div>
           <div>
@@ -535,36 +542,47 @@ function CopyPasteSection({ cv }: { cv: CVData }) {
             </p>
           </div>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleCopy}
-          className="h-10 rounded-full px-4 gap-2 shrink-0"
-        >
-          {copied ? (
-            <>
-              <Check className="w-4 h-4 text-green-600" />
-              <span className="text-green-600 text-sm font-medium">Copié !</span>
-            </>
-          ) : (
-            <>
-              <Copy className="w-4 h-4" />
-              <span className="text-sm font-medium">Copier</span>
-            </>
-          )}
-        </Button>
-      </div>
-      <div className="p-5">
-        <Textarea
-          value={text}
-          readOnly
-          rows={20}
-          className="font-mono text-xs leading-relaxed bg-background resize-none"
+        <ArrowLeft
+          className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ${
+            open ? "-rotate-90" : "rotate-180"
+          }`}
         />
-        <p className="text-xs text-muted-foreground mt-2">
-          Copie ce contenu et colle-le dans Canva, Word, Google Docs ou tout autre éditeur de CV.
-        </p>
-      </div>
+      </button>
+
+      {/* Collapsible body */}
+      {open && (
+        <div className="p-5 border-t border-border space-y-3">
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCopy}
+              className="h-10 rounded-full px-4 gap-2"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="text-green-600 text-sm font-medium">Copié !</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span className="text-sm font-medium">Copier</span>
+                </>
+              )}
+            </Button>
+          </div>
+          <Textarea
+            value={text}
+            readOnly
+            rows={20}
+            className="font-mono text-xs leading-relaxed bg-background resize-none"
+          />
+          <p className="text-xs text-muted-foreground">
+            Colle ce contenu dans Canva, Word, Google Docs ou tout autre éditeur de CV.
+          </p>
+        </div>
+      )}
     </section>
   )
 }
