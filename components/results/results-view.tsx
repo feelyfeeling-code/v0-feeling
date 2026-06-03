@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FeelyMascot } from "@/components/feely-mascot";
 import { AuthHeader } from "@/components/auth-header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ import {
   ExternalLink,
   AlertTriangle,
 } from "lucide-react";
-import { IkigaiRadar, radarAverage, scoresFromAnalysis, type RadarScores } from "./ikigai-radar";
+import { IkigaiRadar, RADAR_AXES, radarAverage, scoresFromAnalysis, type RadarScores } from "./ikigai-radar";
 
 interface Analysis {
   id: string;
@@ -201,7 +200,7 @@ export function ResultsView({
           </div>
         )}
 
-        <div className="container mx-auto px-4 py-10 max-w-4xl space-y-8">
+        <div className="container mx-auto px-4 py-10 max-w-6xl space-y-8">
           {/* Titre */}
           <h1 className="text-3xl md:text-4xl font-extrabold border-b border-border pb-3">
             Le feeling avec ce poste
@@ -259,26 +258,53 @@ export function ResultsView({
             de l&apos;entreprise.
           </p>
 
-          {/* Score global — Radar ikigai */}
-          <section className="space-y-4 flex flex-col items-center">
-            <FeelyMascot
-              variant="purple"
-              size="sm"
-              speechBubble="Voilà comment je vois ce match !"
-            />
-            <div className="w-full max-w-md">
+          {/* Radar ikigai + légende côte à côte */}
+          <section className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-center">
+            {/* Radar */}
+            <div className="lg:col-span-3">
               <IkigaiRadar scores={radarScores} />
             </div>
-            <p
-              className={cn(
-                "text-xl md:text-2xl font-extrabold text-center",
-                verdict.tone === "strong" && "text-accent-foreground",
-                verdict.tone === "partial" && "text-primary",
-                verdict.tone === "weak" && "text-destructive",
-              )}
-            >
-              {verdict.label} — {verdict.headline}
-            </p>
+
+            {/* Légende + verdict */}
+            <div className="lg:col-span-2 flex flex-col gap-3">
+              {RADAR_AXES.map((axis) => (
+                <div
+                  key={axis.key}
+                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/10"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#CCB8FF] shrink-0" />
+                    <span className="text-sm font-medium">{axis.label}</span>
+                  </div>
+                  <span className="text-base font-bold text-primary shrink-0">
+                    {radarScores[axis.key]}%
+                  </span>
+                </div>
+              ))}
+
+              <div className="mt-2 flex flex-col gap-1.5">
+                <span
+                  className={cn(
+                    "self-start inline-flex items-center px-3 py-1 rounded-full text-xs font-bold",
+                    verdict.tone === "strong" && "bg-accent/30 text-foreground",
+                    verdict.tone === "partial" && "bg-primary/20 text-foreground",
+                    verdict.tone === "weak" && "bg-destructive/10 text-destructive",
+                  )}
+                >
+                  {verdict.label}
+                </span>
+                <p
+                  className={cn(
+                    "text-base font-bold leading-snug",
+                    verdict.tone === "strong" && "text-foreground",
+                    verdict.tone === "partial" && "text-primary",
+                    verdict.tone === "weak" && "text-destructive",
+                  )}
+                >
+                  {verdict.headline}
+                </p>
+              </div>
+            </div>
           </section>
 
           {/* Pourquoi ça match (US 13.2) */}

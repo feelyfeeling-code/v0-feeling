@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FeelyMascot } from "@/components/feely-mascot";
 import { AuthHeader } from "@/components/auth-header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,7 @@ import {
   Sparkles,
   FileText,
 } from "lucide-react";
-import { IkigaiRadar, radarAverage, scoresFromAnalysis, type RadarScores } from "./ikigai-radar";
+import { IkigaiRadar, RADAR_AXES, radarAverage, scoresFromAnalysis, type RadarScores } from "./ikigai-radar";
 
 interface Analysis {
   id: string;
@@ -247,10 +246,6 @@ export function CompleteResultsView({
   // US 15.1 : pondération 50% soft (personnalité + valeurs) + 50% hard (compétences).
   // Soft = moyenne simple des deux dimensions soft ; Hard = skills_score.
   const hasSkills = analysis.skills_score !== null;
-  const softScore = Math.round(
-    (analysis.personality_score + analysis.values_score) / 2,
-  );
-  const hardScore = analysis.skills_score ?? 0;
   const effectiveOverall = computeOverallScore({
     personality_score: analysis.personality_score,
     values_score: analysis.values_score,
@@ -299,7 +294,7 @@ export function CompleteResultsView({
           </div>
         )}
 
-        <div className="container mx-auto px-4 py-10 max-w-4xl space-y-8">
+        <div className="container mx-auto px-4 py-10 max-w-6xl space-y-8">
           {/* Titre */}
           <h1 className="text-3xl md:text-4xl font-extrabold">
             Le feeling entre toi et cette offre
@@ -348,50 +343,50 @@ export function CompleteResultsView({
             </div>
           </section>
 
-          {/* Radar ikigai + verdict */}
-          <section className="flex flex-col items-center gap-4">
-            <div className="w-full max-w-lg">
+          {/* Radar ikigai + légende côte à côte */}
+          <section className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-center">
+            {/* Radar */}
+            <div className="lg:col-span-3">
               <IkigaiRadar scores={radarScores} />
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <span
-                className={cn(
-                  "inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold",
-                  verdictBadgeClass,
-                )}
-              >
-                {verdict.label}
-              </span>
-              <p
-                className={cn(
-                  "text-xl md:text-2xl font-extrabold text-center",
-                  verdict.tone === "strong" && "text-accent-foreground",
-                  verdict.tone === "partial" && "text-primary",
-                  verdict.tone === "weak" && "text-destructive",
-                )}
-              >
-                {verdict.headline}
-              </p>
-            </div>
-          </section>
 
-          {/* Breakdown soft/hard */}
-          <section className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl bg-primary/10 border border-primary/20 p-4 text-center">
-              <p className="text-xs text-muted-foreground mb-1">Soft skills</p>
-              <p className="text-3xl font-extrabold">{softScore}%</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Personnalité + Valeurs
-              </p>
-            </div>
-            <div className="rounded-2xl bg-accent/20 border border-accent/30 p-4 text-center">
-              <p className="text-xs text-muted-foreground mb-1">Hard skills</p>
-              <p className="text-3xl font-extrabold">
-                {hasSkills ? `${hardScore}%` : "–"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Compétences + Expériences
-              </p>
+            {/* Légende + verdict */}
+            <div className="lg:col-span-2 flex flex-col gap-3">
+              {RADAR_AXES.map((axis) => (
+                <div
+                  key={axis.key}
+                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-primary/5 border border-primary/10"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#CCB8FF] shrink-0" />
+                    <span className="text-sm font-medium">{axis.label}</span>
+                  </div>
+                  <span className="text-base font-bold text-primary shrink-0">
+                    {radarScores[axis.key]}%
+                  </span>
+                </div>
+              ))}
+
+              <div className="mt-2 flex flex-col gap-1.5">
+                <span
+                  className={cn(
+                    "self-start inline-flex items-center px-3 py-1 rounded-full text-xs font-bold",
+                    verdictBadgeClass,
+                  )}
+                >
+                  {verdict.label}
+                </span>
+                <p
+                  className={cn(
+                    "text-base font-bold leading-snug",
+                    verdict.tone === "strong" && "text-foreground",
+                    verdict.tone === "partial" && "text-primary",
+                    verdict.tone === "weak" && "text-destructive",
+                  )}
+                >
+                  {verdict.headline}
+                </p>
+              </div>
             </div>
           </section>
 
