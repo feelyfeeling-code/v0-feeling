@@ -19,6 +19,7 @@ import {
   Sparkles,
   FileText,
 } from "lucide-react";
+import { IkigaiRadar, radarAverage, scoresFromAnalysis, type RadarScores } from "./ikigai-radar";
 
 interface Analysis {
   id: string;
@@ -39,6 +40,7 @@ interface Analysis {
   attention_points: string[];
   has_dealbreakers: boolean;
   dealbreaker_details: string[] | null;
+  radar_scores: RadarScores | null;
 }
 
 interface CompleteResultsViewProps {
@@ -128,36 +130,6 @@ function getVerdict(score: number): {
   };
 }
 
-// Badge circulaire avec score et mascot.
-function BigScoreBadge({ score }: { score: number }) {
-  return (
-    <div className="relative flex items-center justify-center">
-      <div className="relative w-44 h-44 rounded-full bg-gradient-to-br from-primary/30 via-secondary to-accent/40 flex items-center justify-center">
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <FeelyMascot variant="purple" size="sm" />
-        </div>
-        <div className="text-center mt-4">
-          <div className="text-5xl font-extrabold leading-none">{score}%</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Barre dégradée rouge → jaune → vert avec curseur au score.
-function GradientBar({ score }: { score: number }) {
-  const clamped = Math.max(0, Math.min(100, score));
-  return (
-    <div className="relative w-full max-w-md mx-auto">
-      <div className="h-3 rounded-full bg-gradient-to-r from-red-400 via-yellow-300 to-green-400" />
-      <div
-        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-background border-2 border-foreground shadow"
-        style={{ left: `${clamped}%` }}
-        aria-hidden
-      />
-    </div>
-  );
-}
 
 // Carte "section" dépliable (ouverte par défaut).
 function SectionCard({
@@ -286,7 +258,13 @@ export function CompleteResultsView({
     has_dealbreakers: analysis.has_dealbreakers,
   });
 
-  const verdict = getVerdict(effectiveOverall);
+  const radarScores: RadarScores = analysis.radar_scores ?? scoresFromAnalysis({
+    values_score: analysis.values_score,
+    skills_score: analysis.skills_score,
+    overall_score: effectiveOverall,
+    personality_score: analysis.personality_score,
+  });
+  const verdict = getVerdict(radarAverage(radarScores));
 
   const verdictBadgeClass =
     verdict.tone === "strong"
@@ -370,11 +348,12 @@ export function CompleteResultsView({
             </div>
           </section>
 
-          {/* US 15.1 : score global en grand + barre + verdict */}
-          <section className="space-y-6 flex flex-col items-center">
-            <BigScoreBadge score={effectiveOverall} />
-            <GradientBar score={effectiveOverall} />
-            <div className="flex flex-col items-center gap-3">
+          {/* Radar ikigai + verdict */}
+          <section className="flex flex-col items-center gap-4">
+            <div className="w-full max-w-lg">
+              <IkigaiRadar scores={radarScores} />
+            </div>
+            <div className="flex flex-col items-center gap-2">
               <span
                 className={cn(
                   "inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold",

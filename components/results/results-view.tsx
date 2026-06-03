@@ -14,14 +14,7 @@ import {
   ExternalLink,
   AlertTriangle,
 } from "lucide-react";
-import {
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ResponsiveContainer,
-} from "recharts";
+import { IkigaiRadar, radarAverage, scoresFromAnalysis, type RadarScores } from "./ikigai-radar";
 
 interface Analysis {
   id: string;
@@ -93,43 +86,6 @@ function getVerdict(avg: number): {
   };
 }
 
-const RADAR_LABELS: Record<string, string> = {
-  ce_que_tu_aimes: "Ce que tu aimes",
-  ce_pour_quoi_tu_es_doue: "Tes compétences",
-  ce_que_lentreprise_recherche: "Les attentes",
-  ce_qui_te_correspond_humainement: "Ta personnalité",
-};
-
-function IkigaiRadar({
-  scores,
-}: {
-  scores: NonNullable<Analysis["radar_scores"]>;
-}) {
-  const data = Object.entries(scores).map(([key, value]) => ({
-    subject: RADAR_LABELS[key] ?? key,
-    score: value,
-  }));
-
-  return (
-    <ResponsiveContainer width="100%" height={300}>
-      <RadarChart data={data}>
-        <PolarGrid stroke="hsl(var(--border))" />
-        <PolarAngleAxis
-          dataKey="subject"
-          tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
-        />
-        <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-        <Radar
-          name="Match"
-          dataKey="score"
-          stroke="#CCB8FF"
-          fill="#CCB8FF"
-          fillOpacity={0.5}
-        />
-      </RadarChart>
-    </ResponsiveContainer>
-  );
-}
 
 // Carte "section" dépliable (par défaut ouverte).
 function SectionCard({
@@ -199,22 +155,8 @@ export function ResultsView({
 }: ResultsViewProps) {
   const router = useRouter();
 
-  // For old analyses without radar_scores, derive from existing sub-scores
-  const radarScores = analysis.radar_scores ?? {
-    ce_que_tu_aimes: analysis.values_score,
-    ce_pour_quoi_tu_es_doue: analysis.skills_score ?? analysis.overall_score,
-    ce_que_lentreprise_recherche: analysis.overall_score,
-    ce_qui_te_correspond_humainement: analysis.personality_score,
-  };
-
-  const radarAvg = Math.round(
-    (radarScores.ce_que_tu_aimes +
-      radarScores.ce_pour_quoi_tu_es_doue +
-      radarScores.ce_que_lentreprise_recherche +
-      radarScores.ce_qui_te_correspond_humainement) /
-      4
-  );
-  const verdict = getVerdict(radarAvg);
+  const radarScores: RadarScores = analysis.radar_scores ?? scoresFromAnalysis(analysis);
+  const verdict = getVerdict(radarAverage(radarScores));
   const [isMockCompleting, setIsMockCompleting] = useState(false);
 
   const handleMockComplete = async (userId: string) => {
