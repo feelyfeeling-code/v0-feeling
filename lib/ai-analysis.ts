@@ -205,6 +205,13 @@ const analysisSchema = z.object({
 
   hasDealbreakers: z.boolean().describe('Présence de critères rédhibitoires'),
   dealbreakerDetails: z.array(z.string()).nullable().describe('Détails des critères rédhibitoires'),
+
+  radarScores: z.object({
+    ce_que_tu_aimes: z.number().min(0).max(100),
+    ce_pour_quoi_tu_es_doue: z.number().min(0).max(100),
+    ce_que_lentreprise_recherche: z.number().min(0).max(100),
+    ce_qui_te_correspond_humainement: z.number().min(0).max(100),
+  }).describe('Scores ikigai pour le radar chart (4 axes, 0-100 chacun)'),
 })
 
 export type AnalysisResult = z.infer<typeof analysisSchema>
@@ -415,6 +422,13 @@ overallScore:
 
 Cohérence: si overallScore est inférieur à 40 mais que deux sous-scores sont au-dessus de 60, revois et corrige avant de renvoyer.
 
+RADAR SCORING (4 axes ikigai, 0 à 100 chacun):
+- ce_que_tu_aimes: croise les valeurs, préférences d'environnement et style de travail du candidat avec la culture et les conditions de travail de l'offre.
+- ce_pour_quoi_tu_es_doue: croise les compétences techniques et expériences du candidat avec les compétences requises et le niveau de séniorité attendu.
+- ce_que_lentreprise_recherche: croise les attentes explicites et implicites de l'offre avec l'ensemble du profil candidat.
+- ce_qui_te_correspond_humainement: croise les traits de personnalité et comportements du candidat avec les exigences humaines du poste.
+Chaque axe doit être réaliste et différencié. Utilise toute la plage 0-100. Si un dealbreaker est détecté, plafonne tous les axes à 30.
+
 DEALBREAKERS
 Un dealbreaker est "présent" seulement si:
 - Le candidat l'a sélectionné, ET
@@ -606,6 +620,12 @@ CONTRAINTES STRICTES DE SORTIE:
     result = {
       ...result,
       overallScore: 30,
+      radarScores: {
+        ce_que_tu_aimes: Math.min(30, result.radarScores.ce_que_tu_aimes),
+        ce_pour_quoi_tu_es_doue: Math.min(30, result.radarScores.ce_pour_quoi_tu_es_doue),
+        ce_que_lentreprise_recherche: Math.min(30, result.radarScores.ce_que_lentreprise_recherche),
+        ce_qui_te_correspond_humainement: Math.min(30, result.radarScores.ce_qui_te_correspond_humainement),
+      },
     }
   }
 

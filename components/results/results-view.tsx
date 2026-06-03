@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { FeelyMascot } from "@/components/feely-mascot";
 import { AuthHeader } from "@/components/auth-header";
 import { Footer } from "@/components/footer";
@@ -15,6 +14,14 @@ import {
   ExternalLink,
   AlertTriangle,
 } from "lucide-react";
+import {
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+} from "recharts";
 
 interface Analysis {
   id: string;
@@ -35,6 +42,12 @@ interface Analysis {
   attention_points: string[];
   has_dealbreakers: boolean;
   dealbreaker_details: string[] | null;
+  radar_scores: {
+    ce_que_tu_aimes: number;
+    ce_pour_quoi_tu_es_doue: number;
+    ce_que_lentreprise_recherche: number;
+    ce_qui_te_correspond_humainement: number;
+  } | null;
 }
 
 interface ResultsViewProps {
@@ -54,104 +67,67 @@ function formatRecapField(label: string, value: string): string {
     : value;
 }
 
-// US 13.1 : verdict clair dérivé du score global.
-function getVerdict(score: number): {
+function getVerdict(avg: number): {
   label: string;
   tone: "strong" | "partial" | "weak";
   headline: string;
 } {
-  if (score >= 80) {
+  if (avg > 65) {
     return {
       label: "Bon feeling",
       tone: "strong",
-      headline:
-        "Il y a un vrai bon feeling ici. Cette offre mérite clairement une candidature.",
+      headline: "Cette offre s’aligne vraiment avec ton profil. Tu devrais postuler.",
     };
   }
-  if (score >= 75) {
-    return {
-      label: "Bon feeling",
-      tone: "strong",
-      headline:
-        "Ton profil a de vrais points solides pour cette offre. Ça vaut le coup de candidater.",
-    };
-  }
-  if (score >= 70) {
-    return {
-      label: "Bon feeling",
-      tone: "strong",
-      headline:
-        "Cette offre semble vraiment alignée avec ce que tu recherches. Tu devrais postuler.",
-    };
-  }
-  if (score >= 60) {
+  if (avg >= 40) {
     return {
       label: "Match partiel",
       tone: "partial",
-      headline:
-        "Il y a une base intéressante ici. Quelques points méritent ton attention avant de postuler.",
-    };
-  }
-  if (score >= 50) {
-    return {
-      label: "Match partiel",
-      tone: "partial",
-      headline:
-        "Cette offre peut se tenter, mais certains éléments risquent de créer un écart.",
-    };
-  }
-  if (score >= 40) {
-    return {
-      label: "Match partiel",
-      tone: "partial",
-      headline:
-        "Le match reste partiel pour l’instant. Il faudra bien cibler ta candidature.",
-    };
-  }
-  if (score >= 30) {
-    return {
-      label: "Feeling faible",
-      tone: "weak",
-      headline:
-        "Il y’a quelques écarts importants entre les attentes du poste et ton profil actuel.",
+      headline: "Il y a une base intéressante ici. Quelques points méritent ton attention avant de postuler.",
     };
   }
   return {
     label: "Feeling faible",
     tone: "weak",
-    headline:
-      "Cette offre ne semble pas vraiment alignée avec ce qui valorise ton profil.",
+    headline: "Il y a quelques écarts importants entre les attentes du poste et ton profil actuel.",
   };
 }
 
-// Badge circulaire avec le score en gros (inspiré de la maquette)
-function BigScoreBadge({ score }: { score: number }) {
-  return (
-    <div className="relative flex items-center justify-center">
-      <div className="relative w-44 h-44 rounded-full bg-gradient-to-br from-primary/30 via-secondary to-accent/40 flex items-center justify-center">
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <FeelyMascot variant="purple" size="sm" />
-        </div>
-        <div className="text-center mt-4">
-          <div className="text-5xl font-extrabold leading-none">{score}%</div>
-        </div>
-      </div>
-    </div>
-  );
-}
+const RADAR_LABELS: Record<string, string> = {
+  ce_que_tu_aimes: "Ce que tu aimes",
+  ce_pour_quoi_tu_es_doue: "Tes compétences",
+  ce_que_lentreprise_recherche: "Les attentes",
+  ce_qui_te_correspond_humainement: "Ta personnalité",
+};
 
-// Barre dégradée rouge → jaune → vert avec curseur positionné sur le score.
-function GradientBar({ score }: { score: number }) {
-  const clamped = Math.max(0, Math.min(100, score));
+function IkigaiRadar({
+  scores,
+}: {
+  scores: NonNullable<Analysis["radar_scores"]>;
+}) {
+  const data = Object.entries(scores).map(([key, value]) => ({
+    subject: RADAR_LABELS[key] ?? key,
+    score: value,
+  }));
+
   return (
-    <div className="relative w-full max-w-md mx-auto">
-      <div className="h-3 rounded-full bg-gradient-to-r from-red-400 via-yellow-300 to-green-400" />
-      <div
-        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-background border-2 border-foreground shadow"
-        style={{ left: `${clamped}%` }}
-        aria-hidden
-      />
-    </div>
+    <ResponsiveContainer width="100%" height={300}>
+      <RadarChart data={data}>
+        <PolarGrid stroke="hsl(var(--border))" />
+        <PolarAngleAxis
+          dataKey="subject"
+          tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+        />
+        <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+        <Radar
+          name="Match"
+          dataKey="score"
+          stroke="#CCB8FF"
+          fill="#CCB8FF"
+          fillOpacity={0.5}
+        />
+      </RadarChart>
+    </ResponsiveContainer>
   );
 }
 
@@ -222,7 +198,23 @@ export function ResultsView({
   userId,
 }: ResultsViewProps) {
   const router = useRouter();
-  const verdict = getVerdict(analysis.overall_score);
+
+  // For old analyses without radar_scores, derive from existing sub-scores
+  const radarScores = analysis.radar_scores ?? {
+    ce_que_tu_aimes: analysis.values_score,
+    ce_pour_quoi_tu_es_doue: analysis.skills_score ?? analysis.overall_score,
+    ce_que_lentreprise_recherche: analysis.overall_score,
+    ce_qui_te_correspond_humainement: analysis.personality_score,
+  };
+
+  const radarAvg = Math.round(
+    (radarScores.ce_que_tu_aimes +
+      radarScores.ce_pour_quoi_tu_es_doue +
+      radarScores.ce_que_lentreprise_recherche +
+      radarScores.ce_qui_te_correspond_humainement) /
+      4
+  );
+  const verdict = getVerdict(radarAvg);
   const [isMockCompleting, setIsMockCompleting] = useState(false);
 
   const handleMockComplete = async (userId: string) => {
@@ -325,10 +317,16 @@ export function ResultsView({
             de l&apos;entreprise.
           </p>
 
-          {/* Score global + gradient bar */}
-          <section className="space-y-6 flex flex-col items-center">
-            <BigScoreBadge score={analysis.overall_score} />
-            <GradientBar score={analysis.overall_score} />
+          {/* Score global — Radar ikigai */}
+          <section className="space-y-4 flex flex-col items-center">
+            <FeelyMascot
+              variant="purple"
+              size="sm"
+              speechBubble="Voilà comment je vois ce match !"
+            />
+            <div className="w-full max-w-md">
+              <IkigaiRadar scores={radarScores} />
+            </div>
             <p
               className={cn(
                 "text-xl md:text-2xl font-extrabold text-center",
@@ -337,7 +335,7 @@ export function ResultsView({
                 verdict.tone === "weak" && "text-destructive",
               )}
             >
-              {verdict.headline}
+              {verdict.label} — {verdict.headline}
             </p>
           </section>
 

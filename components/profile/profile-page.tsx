@@ -21,6 +21,8 @@ import {
   ChevronRight,
   Trash2,
   Sparkles,
+  RefreshCw,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -400,6 +402,12 @@ interface ProfilePageProps {
   } | null
   skills: string[]
   experiences: WorkExperience[]
+  playback: {
+    bloc1: { titre: string; contenu: string }
+    bloc2: { titre: string; contenu: string }
+    bloc3: { titre: string; contenu: string }
+    bloc4: { titre: string; contenu: string }
+  } | null
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -414,6 +422,7 @@ export function ProfilePage({
   dreamJob,
   skills: initialSkills,
   experiences: initialExperiences,
+  playback: initialPlayback,
 }: ProfilePageProps) {
   // ── Info section state ──
   const [editInfo, setEditInfo] = useState(false)
@@ -458,6 +467,25 @@ export function ProfilePage({
   const [industries, setIndustries] = useState<string[]>(dreamJob?.industries ?? [])
   const [salaryRange, setSalaryRange] = useState(dreamJob?.salary_range ?? '')
   const [remotePreference, setRemotePreference] = useState(dreamJob?.remote_preference ?? '')
+
+  // ── Playback state ──
+  const [playback, setPlayback] = useState(initialPlayback)
+  const [regenerating, setRegenerating] = useState(false)
+
+  const handleRegenerate = async () => {
+    setRegenerating(true)
+    try {
+      const res = await fetch('/api/onboarding/playback/regenerate', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erreur')
+      setPlayback(data)
+      toast.success('Playback mis à jour !')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Erreur')
+    } finally {
+      setRegenerating(false)
+    }
+  }
 
   // ── Technical section state ──
   const [editTech, setEditTech] = useState(false)
@@ -595,6 +623,69 @@ export function ProfilePage({
         </div>
 
         <div className="space-y-4">
+          {/* ── 0. Mon playback ── */}
+          {playback && (
+            <div className="rounded-2xl border border-border bg-card overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-primary"><Sparkles className="w-4 h-4" /></span>
+                  <h2 className="font-semibold text-base">Mon playback</h2>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRegenerate}
+                  disabled={regenerating}
+                  className="gap-1.5 text-muted-foreground"
+                >
+                  {regenerating
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : <RefreshCw className="w-3.5 h-3.5" />}
+                  {regenerating ? 'Génération...' : 'Regénérer'}
+                </Button>
+              </div>
+              <div className="px-5 py-4 space-y-3">
+                {[playback.bloc1, playback.bloc2, playback.bloc3, playback.bloc4].map((bloc, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'rounded-xl border p-4',
+                      i === 0 && 'bg-primary/10 border-primary/20',
+                      i === 1 && 'bg-secondary/10 border-secondary/30',
+                      i === 2 && 'bg-accent/10 border-accent/20',
+                      i === 3 && 'bg-muted/60 border-border',
+                    )}
+                  >
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                      {bloc.titre}
+                    </p>
+                    <p className="text-sm leading-relaxed">{bloc.contenu}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Pas encore de playback */}
+          {!playback && (
+            <div className="rounded-2xl border border-dashed border-border bg-card px-5 py-6 text-center">
+              <Sparkles className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground mb-3">
+                Ton playback sera généré à la fin de l&apos;onboarding.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerate}
+                disabled={regenerating}
+                className="gap-1.5 rounded-full"
+              >
+                {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                {regenerating ? 'Génération...' : 'Générer maintenant'}
+              </Button>
+            </div>
+          )}
+
           {/* ── 1. Infos générales ── */}
           <Section
             title="Informations générales"

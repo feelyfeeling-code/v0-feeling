@@ -11,14 +11,14 @@ import { toast } from 'sonner'
 
 // Step components
 import { WelcomeStep } from './steps/welcome-step'
-import { AcademicStep } from './steps/academic-step'
-import { SituationStep } from './steps/situation-step'
+import { ParcoursStep } from './steps/parcours-step'
+import { VibeStep } from './steps/vibe-step'
 import { PersonalityStep } from './steps/personality-step'
-import { ValuesStep } from './steps/values-step'
 import { DreamJobStep } from './steps/dream-job-step'
+import { PlaybackStep } from './steps/playback-step'
 
 export interface OnboardingData {
-  // Academic profile
+  // Parcours académique
   academic: {
     education_level: string
     graduation_date: string
@@ -26,32 +26,43 @@ export interface OnboardingData {
     school_name: string
     field_of_study: string[]
   }
-  // Current situation (multi-select)
+  // Situation actuelle
   situation: {
     situations: string[]
     job_search_types: string[]
   }
-  // Personality profile (3 ranked traits + existing test OR 10-question integrated test)
+  // Ce qui te fait vibrer (valeurs, environnement, façon de travailler)
+  values: {
+    ideal_environment: string[]
+    selected_values: string[]
+    dealbreakers: string[]
+    work_solo_team_slider: number
+    work_structure_slider: number
+    multi_project_comfort: string
+    motivation_text: string
+  }
+  // Qui tu es (personnalité)
   personality: {
     traits: string[]
     has_taken_test: boolean
     test_type: string
     test_result: string
     test_answers: Record<string, number>
+    when_in_element: string
+    reaction_to_failure: string
+    approach_complex_problem: string
   }
-  // Values profile (up to 3 values + up to 3 dealbreakers)
-  values: {
-    selected_values: string[]
-    dealbreakers: string[]
-  }
-  // Dream job — Le bon job selon toi, c'est quoi ?
+  // Où tu veux aller (job de rêve)
   dreamJob: {
+    vision_2_years: string
+    specialization_vs_broadening: number
+    fast_growth_importance: string
     job_titles: string[]
-    locations: string[]
-    location_radius: number
     industries: string[]
     salary_range: string
     remote_preference: string
+    locations: string[]
+    location_radius: number
   }
 }
 
@@ -67,24 +78,35 @@ const initialData: OnboardingData = {
     situations: [],
     job_search_types: [],
   },
+  values: {
+    ideal_environment: [],
+    selected_values: [],
+    dealbreakers: [],
+    work_solo_team_slider: 3,
+    work_structure_slider: 3,
+    multi_project_comfort: '',
+    motivation_text: '',
+  },
   personality: {
     traits: [],
     has_taken_test: false,
     test_type: '',
     test_result: '',
     test_answers: {},
-  },
-  values: {
-    selected_values: [],
-    dealbreakers: [],
+    when_in_element: '',
+    reaction_to_failure: '',
+    approach_complex_problem: '',
   },
   dreamJob: {
+    vision_2_years: '',
+    specialization_vs_broadening: 3,
+    fast_growth_importance: '',
     job_titles: [],
-    locations: [],
-    location_radius: 40,
     industries: [],
     salary_range: '',
     remote_preference: '',
+    locations: [],
+    location_radius: 40,
   },
 }
 
@@ -93,11 +115,12 @@ interface OnboardingFlowProps {
   firstName: string
 }
 
+// Steps: 1=welcome, 2=parcours, 3=vibe, 4=personality, 5=dreamjob, 6=playback
 const TOTAL_STEPS = 6
 
 const STORAGE_KEY = 'feeling_onboarding_state'
 // Incrémenter quand la forme de OnboardingData change (invalide l'état local stocké).
-const STORAGE_VERSION = 4
+const STORAGE_VERSION = 5
 
 interface PersistedState {
   version: typeof STORAGE_VERSION
@@ -121,17 +144,14 @@ export function OnboardingFlow({ userId, firstName }: OnboardingFlowProps) {
         const parsed = JSON.parse(raw) as PersistedState
         if (parsed.version === STORAGE_VERSION && parsed.userId === userId) {
           setCurrentStep(parsed.currentStep)
-          // Merge profond pour garantir que toutes les sous-clés existent
-          // même si une section a été partiellement sauvegardée.
           setData({
             academic: { ...initialData.academic, ...parsed.data.academic },
             situation: { ...initialData.situation, ...parsed.data.situation },
-            personality: { ...initialData.personality, ...parsed.data.personality },
             values: { ...initialData.values, ...parsed.data.values },
+            personality: { ...initialData.personality, ...parsed.data.personality },
             dreamJob: { ...initialData.dreamJob, ...parsed.data.dreamJob },
           })
         } else {
-          // Ancienne version incompatible : on purge.
           localStorage.removeItem(STORAGE_KEY)
         }
       }
@@ -141,7 +161,7 @@ export function OnboardingFlow({ userId, firstName }: OnboardingFlowProps) {
     setHydrated(true)
   }, [userId])
 
-  // Persist on every change once we've hydrated (avoids overwriting before read).
+  // Persist on every change once we've hydrated.
   useEffect(() => {
     if (!hydrated) return
     try {
@@ -157,8 +177,6 @@ export function OnboardingFlow({ userId, firstName }: OnboardingFlowProps) {
     }
   }, [hydrated, userId, currentStep, data])
 
-  // Welcome page (step 1) is not counted as a "numbered" step.
-  // Actual onboarding steps are currentStep >= 2, displayed as 1..TOTAL_STEPS-1.
   const isWelcome = currentStep === 1
   const displayedStep = currentStep - 1
   const displayedTotal = TOTAL_STEPS - 1
@@ -191,9 +209,6 @@ export function OnboardingFlow({ userId, firstName }: OnboardingFlowProps) {
 
     const supabase = createClient()
 
-    // Helper : exécute un upsert et relance une erreur lisible si ça échoue.
-    // Les PostgrestError de Supabase ont des props non énumérables → on les
-    // extrait explicitement pour qu'elles apparaissent dans les logs et toasts.
     const runUpsert = async (
       table: string,
       payload: Record<string, unknown>,
@@ -226,22 +241,19 @@ export function OnboardingFlow({ userId, firstName }: OnboardingFlowProps) {
         user_id: userId,
         ...data.situation,
       })
-      await runUpsert('personality_profiles', {
-        user_id: userId,
-        ...data.personality,
-      })
       await runUpsert('values_profiles', {
         user_id: userId,
         ...data.values,
+      })
+      await runUpsert('personality_profiles', {
+        user_id: userId,
+        ...data.personality,
       })
       await runUpsert('dream_jobs', {
         user_id: userId,
         ...data.dreamJob,
       })
 
-      // Mark onboarding as completed. On utilise upsert pour couvrir le cas
-      // où la ligne profiles n'aurait pas été créée par le trigger auth
-      // (edge case : trigger désactivé, row supprimée manuellement, etc.).
       const { data: updatedProfile, error: profileError } = await supabase
         .from('profiles')
         .upsert(
@@ -269,7 +281,6 @@ export function OnboardingFlow({ userId, firstName }: OnboardingFlowProps) {
         )
       }
 
-      // Onboarding terminé : on purge l'état local.
       try {
         localStorage.removeItem(STORAGE_KEY)
       } catch {
@@ -277,9 +288,6 @@ export function OnboardingFlow({ userId, firstName }: OnboardingFlowProps) {
       }
 
       toast.success('Profil complété !')
-      // On force un refresh serveur pour invalider les caches de server
-      // components AVANT de naviguer, sinon la page termine peut lire un
-      // profil stale et rediriger vers /onboarding.
       router.refresh()
       router.push('/onboarding/termine')
     } catch (error) {
@@ -330,23 +338,25 @@ export function OnboardingFlow({ userId, firstName }: OnboardingFlowProps) {
       {/* Content */}
       <main className="flex-1 container mx-auto px-4 py-8">
         {currentStep === 1 && (
-          <WelcomeStep 
+          <WelcomeStep
             firstName={firstName}
             onNext={nextStep}
           />
         )}
         {currentStep === 2 && (
-          <AcademicStep
-            data={data.academic}
-            onUpdate={(updates) => updateData('academic', updates)}
+          <ParcoursStep
+            academicData={data.academic}
+            situationData={data.situation}
+            onUpdateAcademic={(updates) => updateData('academic', updates)}
+            onUpdateSituation={(updates) => updateData('situation', updates)}
             onNext={nextStep}
             onPrev={prevStep}
           />
         )}
         {currentStep === 3 && (
-          <SituationStep
-            data={data.situation}
-            onUpdate={(updates) => updateData('situation', updates)}
+          <VibeStep
+            data={data.values}
+            onUpdate={(updates) => updateData('values', updates)}
             onNext={nextStep}
             onPrev={prevStep}
           />
@@ -360,17 +370,16 @@ export function OnboardingFlow({ userId, firstName }: OnboardingFlowProps) {
           />
         )}
         {currentStep === 5 && (
-          <ValuesStep
-            data={data.values}
-            onUpdate={(updates) => updateData('values', updates)}
+          <DreamJobStep
+            data={data.dreamJob}
+            onUpdate={(updates) => updateData('dreamJob', updates)}
             onNext={nextStep}
             onPrev={prevStep}
           />
         )}
         {currentStep === 6 && (
-          <DreamJobStep
-            data={data.dreamJob}
-            onUpdate={(updates) => updateData('dreamJob', updates)}
+          <PlaybackStep
+            data={data}
             onComplete={handleComplete}
             onPrev={prevStep}
             isSubmitting={isSubmitting}

@@ -66,6 +66,8 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
   const [showWelcome, setShowWelcome] = useState(false)
 
   // Mode manuel : quand le scraping échoue ou que l'utilisateur préfère coller le texte.
+  const [showGate, setShowGate] = useState(false)
+
   const [mode, setMode] = useState<'url' | 'paste'>('url')
   const [pastedTitle, setPastedTitle] = useState('')
   const [pastedCompany, setPastedCompany] = useState('')
@@ -77,10 +79,24 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
   useEffect(() => {
     if (searchParams.get('welcome') === 'true') {
       setShowWelcome(true)
-      // Clean up URL
       window.history.replaceState({}, '', '/accueil')
     }
   }, [searchParams])
+
+  // Auto-submit pending offer once user has completed their tech profile
+  useEffect(() => {
+    if (!hasTechnicalProfile) return
+    const pending = localStorage.getItem('feeling_pending_offer')
+    if (!pending) return
+    try {
+      const offerData = JSON.parse(pending) as Record<string, unknown>
+      localStorage.removeItem('feeling_pending_offer')
+      submitAnalysis(offerData)
+    } catch {
+      localStorage.removeItem('feeling_pending_offer')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleMockAnalysis = async (preset: string) => {
     setIsAnalyzing(true)
@@ -161,6 +177,12 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
       return
     }
 
+    if (!hasTechnicalProfile) {
+      localStorage.setItem('feeling_pending_offer', JSON.stringify({ url: jobUrl }))
+      setShowGate(true)
+      return
+    }
+
     await submitAnalysis({ url: jobUrl })
   }
 
@@ -177,6 +199,21 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
     }
     if (!pastedCompany.trim()) {
       toast.error('Précise le nom de l\'entreprise')
+      return
+    }
+
+    if (!hasTechnicalProfile) {
+      localStorage.setItem('feeling_pending_offer', JSON.stringify({
+        rawOffer: {
+          title: pastedTitle,
+          company: pastedCompany,
+          description: pastedDescription,
+          location: pastedLocation,
+          type: pastedType,
+          remote: pastedRemote,
+        },
+      }))
+      setShowGate(true)
       return
     }
 
@@ -238,6 +275,31 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                 <p className="text-muted-foreground mb-6">
                   Colle le lien de l&apos;offre et voyons si le job te correspond vraiment !
                 </p>
+
+                {showGate ? (
+                  <div className="flex flex-col items-start gap-6 py-4">
+                    <FeelyMascot variant="purple" size="md" />
+                    <p className="text-xl font-bold max-w-sm leading-snug">
+                      Avant de te donner une analyse complète, j&apos;ai besoin de connaître tes compétences et tes expériences.
+                    </p>
+                    <Link href="/profil-technique">
+                      <Button
+                        size="lg"
+                        className="h-12 px-6 rounded-2xl bg-foreground text-background hover:bg-foreground/90 text-base font-bold"
+                      >
+                        Compléter mon profil
+                      </Button>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setShowGate(false)}
+                      className="text-sm text-muted-foreground hover:underline"
+                    >
+                      Retour
+                    </button>
+                  </div>
+                ) : (
+                <>
 
                 {/* Toggle URL / Coller */}
                 <div className="inline-flex rounded-full bg-muted p-1 mb-6">
@@ -376,6 +438,8 @@ export function HomeDashboard({ userId, firstName, recentAnalyses, dailyAnalysis
                       Champs marqués * obligatoires. Plus le texte est complet, meilleure sera l&apos;analyse.
                     </p>
                   </form>
+                )}
+                </>
                 )}
               </div>
               

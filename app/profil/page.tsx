@@ -23,7 +23,7 @@ export default async function ProfilPage() {
     skillsResult,
     experiencesResult,
   ] = await Promise.all([
-    supabase.from('profiles').select('first_name, last_name, email').eq('id', user.id).single(),
+    supabase.from('profiles').select('first_name, last_name, email, playback_result').eq('id', user.id).single(),
     supabase.from('current_situations').select('*').eq('user_id', user.id).single(),
     supabase.from('academic_profiles').select('*').eq('user_id', user.id).single(),
     supabase.from('personality_profiles').select('*').eq('user_id', user.id).single(),
@@ -44,6 +44,7 @@ export default async function ProfilPage() {
       dreamJob={dreamJobResult.data}
       skills={skillsResult.data?.skills ?? []}
       experiences={experiencesResult.data ?? []}
+      playback={profileResult.data?.playback_result ?? null}
     />
   )
 }

@@ -165,6 +165,7 @@ export async function POST(request: Request) {
         attention_points: analysis.attentionPoints,
         has_dealbreakers: analysis.hasDealbreakers,
         dealbreaker_details: analysis.dealbreakerDetails,
+        radar_scores: analysis.radarScores,
       })
       .select()
       .single()
