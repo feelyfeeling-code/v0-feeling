@@ -33,8 +33,20 @@ export function LoginForm() {
       return
     }
 
+    // Redirection selon le rôle (conseiller école vs diplômé)
+    const { getUserRole, landingPathForRole } = await import('@/lib/auth/getRole')
+    const role = await getUserRole(supabase)
+
+    // Met à jour la présence du diplômé dès la connexion
+    if (role?.role === 'graduate') {
+      await supabase
+        .from('school_members')
+        .update({ last_active_at: new Date().toISOString() })
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id ?? '')
+    }
+
     toast.success('Connexion réussie !')
-    router.push('/accueil')
+    router.push(landingPathForRole(role))
     router.refresh()
   }
 
